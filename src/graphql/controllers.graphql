@@ -1,0 +1,10 @@
+query Controllers {
+  paprControllers {
+    id,
+    maxLTV,
+    underlying {
+        id,
+        decimals
+    }
+  }
+}

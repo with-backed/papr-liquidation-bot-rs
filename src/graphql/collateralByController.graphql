@@ -1,0 +1,7 @@
+query CollateralByController($controller: String) {
+  allowedCollaterals(where: { controller: $controller}) {
+    token {
+        id
+    }
+  }
+}

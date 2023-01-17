@@ -1,16 +1,22 @@
 use ethers::types::U256;
 use tokio::runtime::Runtime;
 
-mod reservoir;
 mod papr_subgraph;
+mod reservoir;
 use crate::{
-    reservoir::{max_collection_bid, PriceKind},
-    papr_subgraph::vaults_by_collateral_and_debt_per_collateral
+    papr_subgraph::{
+        collateral_by_controller::CollateralByControllerAllowedCollaterals as Collateral,
+        collateral_vaults_exceeding_debt_per_collateral,
+        controllers::ControllersPaprControllers as Controller,
+        vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
+    },
+    reservoir::{max_collection_bid, PriceKind, ReservoirOracleResponse},
 };
 
 fn main() {
+    /// IGNORE FOR NOW
     let runtime = Runtime::new().unwrap();
-    runtime.block_on(async {
+    let oracle_info = runtime.block_on(async {
         match max_collection_bid(
             "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
             PriceKind::Lower,
@@ -21,21 +27,24 @@ fn main() {
         {
             Ok(body) => {
                 println!("Response body: {}", body.price);
+                return Some(body);
             }
             Err(err) => {
                 eprintln!("Error: {}", err);
+                return None;
             }
         }
     });
     runtime.block_on(async {
-        match vaults_by_collateral_and_debt_per_collateral(
+        match collateral_vaults_exceeding_debt_per_collateral(
+            "0x6df74b0653ba2b622d911ef5680d1776d850ace9",
             "0x8232c5fd480c2a74d2f25d3362f262ff3511ce49",
             U256::from_dec_str("246987190433877370000").unwrap(),
         )
         .await
         {
             Ok(body) => {
-                println!("Response body: {}", body.vaults.first().unwrap().account);
+                println!("Response body: {}", body.first().unwrap().account);
             }
             Err(err) => {
                 eprintln!("Error: {}", err);
@@ -44,44 +53,31 @@ fn main() {
     });
 }
 
-// fetch all vaults
-// group by collateral, or iterate through allowed collateral and fetch?
-// then get the price for that collateral
-// get the max debt
-// then compare that to the max debt per vault (we probably don't need to fetch vault's till the step)
-// then we can liquidate
+// returns auction objects + auction ID? useful if auction starter
+// wants to keep track of auctions they started: modeling your discount is
+// a bit tough? 
+async fn start_liqudations(controller: Controller) {
 
-// max debt that calls for target
-// get max debt for each collateral type
-// compare this to debt_per_nft for all the vaults with that type
-// find vaults in violation
+}
 
-// fn get controller allowed collateral
 
-// fn collateral price
+async fn liquidatable_vaults(
+    controller: Controller,
+    collateral: Collateral,
+    target: U256,
+    oracle_info: ReservoirOracleResponse,
+) -> Result<Vec<Vault>, Box<dyn std::error::Error>> {
+    let price_atomic = oracle_info.price_in_atomic_units(controller.underlying.decimals as u8);
+    let max_debt = max_debt(price_atomic, controller.max_ltv_as_u256(), target);
+    let res = collateral_vaults_exceeding_debt_per_collateral(&controller.id, &collateral.token.id, max_debt).await.unwrap();
+    return Ok(res);
+}
 
-// fetch vaults exceeding
-
-// liquidate
-
-// https://api.reservoir.tools/oracle/collections/top-bid/v1?collection=0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d
-
-/*
-{"price":64.6,"message":{"id":"0x9dbcb059816093c07c2ec708ca46dbfdc9f01111f181854c0f735bc435678045","payload":"0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000380814dbc0a3c0000","timestamp":1673832343,"signature":"0x391555b9c392bb7cf1414fafc391b6fab4fad9acc5d41db75fc07c7f42ac97896daee4f3c9557da4fc9f7bf9c514f1589c935cc1d240c6bd3580561a076a89ac1c"}}
-*/
-
-// bytes32 id;
-//         bytes payload;
-//         // The UNIX timestamp when the message was signed by the oracle
-//         uint256 timestamp;
-//         // ECDSA signature or EIP-2098 compact signature
-//         bytes signature;
-
-fn max_debt(collateral_value_underlying: U256, max_ltv: U256, papr_price_underlying: U256) -> U256 {
+fn max_debt(collateral_value_underlying: U256, max_ltv: U256, target: U256) -> U256 {
     return collateral_value_underlying
         .checked_mul(max_ltv)
         .expect("Max debt multiplication overflow")
-        .checked_div(papr_price_underlying)
+        .checked_div(target)
         .expect("Max debt divide by 0");
 }
 

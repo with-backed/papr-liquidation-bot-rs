@@ -1,4 +1,4 @@
-use ethers::types::Bytes;
+use ethers::types::{Bytes, U256};
 use reqwest::Client;
 use reqwest::Error;
 use serde::Deserialize;
@@ -35,6 +35,24 @@ pub struct ReservoirOracleMessage {
     id: String,
     payload: Bytes,
     signature: Bytes,
+}
+
+impl ReservoirOracleResponse {
+    pub fn price_in_atomic_units(&self, decimals: u8) -> U256 {
+        let ONE = U256::from_dec_str("10")
+        .unwrap()
+        .pow(U256::from_dec_str(&decimals.to_string()).unwrap());
+    // scalar to prevent loss of precison when converting to atomic
+    let scalar = 10e6;
+    let u256_scalar = U256::from_dec_str(&scalar.to_string()).unwrap();
+    let scaled_price = self.price * scalar;
+    let u256_scaled_price = U256::from_dec_str(&scaled_price.to_string()).unwrap();
+    return ONE
+        .checked_mul(u256_scaled_price)
+        .expect("price_atomic overflow")
+        .checked_div(u256_scalar)
+        .expect("price_atomic division error");
+    }
 }
 
 pub async fn max_collection_bid(
