@@ -7,7 +7,7 @@ use crate::{
     papr_subgraph::{
         collateral_by_controller::CollateralByControllerAllowedCollaterals as Collateral,
         collateral_vaults_exceeding_debt_per_collateral,
-        controllers::ControllersPaprControllers as Controller,
+        all_controllers::AllControllersPaprControllers as Controller,
         vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
     reservoir::{max_collection_bid, PriceKind, ReservoirOracleResponse},
@@ -55,11 +55,8 @@ fn main() {
 
 // returns auction objects + auction ID? useful if auction starter
 // wants to keep track of auctions they started: modeling your discount is
-// a bit tough? 
-async fn start_liqudations(controller: Controller) {
-
-}
-
+// a bit tough?
+async fn start_liqudations(controller: Controller) {}
 
 async fn liquidatable_vaults(
     controller: Controller,
@@ -69,7 +66,14 @@ async fn liquidatable_vaults(
 ) -> Result<Vec<Vault>, Box<dyn std::error::Error>> {
     let price_atomic = oracle_info.price_in_atomic_units(controller.underlying.decimals as u8);
     let max_debt = max_debt(price_atomic, controller.max_ltv_as_u256(), target);
-    let res = collateral_vaults_exceeding_debt_per_collateral(&controller.id, &collateral.token.id, max_debt).await.unwrap();
+    let res = collateral_vaults_exceeding_debt_per_collateral(
+        &controller.id,
+        &collateral.token.id,
+        max_debt,
+    )
+    .await
+    .expect("error fetching vaults exeeding debt per collateral");
+
     return Ok(res);
 }
 

@@ -1,0 +1,10 @@
+query ControllerByID($id: ID!) {
+  paprController(id: $id) {
+    id,
+    maxLTV,
+    underlying {
+        id,
+        decimals
+    }
+  }
+}

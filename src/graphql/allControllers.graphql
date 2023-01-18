@@ -1,4 +1,4 @@
-query Controllers {
+query AllControllers {
   paprControllers {
     id,
     maxLTV,

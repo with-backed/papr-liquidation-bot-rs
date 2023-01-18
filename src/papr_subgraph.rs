@@ -11,7 +11,14 @@ use String as BigInt;
 )]
 pub struct VaultsExceedingDebtPerCollateral;
 
-pub async fn collateral_vaults_exceeding_debt_per_collateral(controller: &str, collateral: &str, debt_per_collateral: U256) -> Result<Vec<vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults>, Box<dyn Error>>{
+pub async fn collateral_vaults_exceeding_debt_per_collateral(
+    controller: &str,
+    collateral: &str,
+    debt_per_collateral: U256,
+) -> Result<
+    Vec<vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults>,
+    Box<dyn Error>,
+> {
     let variables = vaults_exceeding_debt_per_collateral::Variables {
         controller: Some(controller.to_string()),
         collateral: Some(collateral.to_string()),
@@ -64,26 +71,24 @@ pub async fn collateral(
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "src/graphql/paprSchema.graphql",
-    query_path = "src/graphql/controllers.graphql"
+    query_path = "src/graphql/allControllers.graphql"
 )]
-pub struct Controllers;
+pub struct AllControllers;
 
-pub async fn papr_controllers(
-    controller: &str,
-) -> Result<Vec<controllers::ControllersPaprControllers>, Box<dyn Error>> {
-    let variables = controllers::Variables;
-    let request_body = Controllers::build_query(variables);
+impl all_controllers::AllControllersPaprControllers {
+    pub fn max_ltv_as_u256(&self) -> U256 {
+        return U256::from_dec_str(&self.max_ltv).expect("max_ltv_as_u256 error");
+    }
+}
+
+pub async fn all_papr_controllers() -> Result<Vec<all_controllers::AllControllersPaprControllers>, Box<dyn Error>> {
+    let variables = all_controllers::Variables;
+    let request_body = AllControllers::build_query(variables);
     let client = reqwest::Client::new();
     let url = env::var("PAPR_SUBGRAPH_URL").expect("PAPR_SUBGRAPH_URL not set");
     let res = client.post(url).json(&request_body).send().await?;
-    let response_body: Response<controllers::ResponseData> = res.json().await?;
-    let response_data: controllers::ResponseData =
+    let response_body: Response<all_controllers::ResponseData> = res.json().await?;
+    let response_data: all_controllers::ResponseData =
         response_body.data.expect("missing response data");
     Ok(response_data.papr_controllers)
-}
-
-impl controllers::ControllersPaprControllers {
-    pub fn max_ltv_as_u256(&self) -> U256 {
-        return U256::from_dec_str(&self.max_ltv).unwrap();
-    }
 }

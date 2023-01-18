@@ -39,19 +39,19 @@ pub struct ReservoirOracleMessage {
 
 impl ReservoirOracleResponse {
     pub fn price_in_atomic_units(&self, decimals: u8) -> U256 {
-        let ONE = U256::from_dec_str("10")
-        .unwrap()
-        .pow(U256::from_dec_str(&decimals.to_string()).unwrap());
-    // scalar to prevent loss of precison when converting to atomic
-    let scalar = 10e6;
-    let u256_scalar = U256::from_dec_str(&scalar.to_string()).unwrap();
-    let scaled_price = self.price * scalar;
-    let u256_scaled_price = U256::from_dec_str(&scaled_price.to_string()).unwrap();
-    return ONE
-        .checked_mul(u256_scaled_price)
-        .expect("price_atomic overflow")
-        .checked_div(u256_scalar)
-        .expect("price_atomic division error");
+        let one = U256::from_dec_str("10")
+            .unwrap()
+            .pow(U256::from_dec_str(&decimals.to_string()).unwrap());
+        // scalar to prevent loss of precison when converting to atomic
+        let scalar = 1e6;
+        let u256_scalar = U256::from_dec_str(&scalar.to_string()).unwrap();
+        let scaled_price = (self.price * scalar).floor();
+        let u256_scaled_price = U256::from_dec_str(&scaled_price.to_string()).unwrap();
+        return one
+            .checked_mul(u256_scaled_price)
+            .expect("price_atomic overflow")
+            .checked_div(u256_scalar)
+            .expect("price_atomic division error");
     }
 }
 
@@ -90,4 +90,46 @@ pub async fn max_collection_bid(
         .json::<ReservoirOracleResponse>()
         .await?;
     Ok(res)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::reservoir::ReservoirOracleMessage;
+    use crate::reservoir::ReservoirOracleResponse;
+    use ethers::types::{Bytes, U256};
+    use std::str::FromStr;
+
+    #[test]
+    fn price_in_atomic_units_computes_correctly() {
+        let response = ReservoirOracleResponse {
+            price: 1.0,
+            message: ReservoirOracleMessage {
+                id: "".to_string(),
+                payload: Bytes::from_str("0x1213").unwrap(),
+                signature: Bytes::from_str("0x1213").unwrap(),
+            },
+            data: Bytes::from_str("0x1213").unwrap(),
+        };
+        assert_eq!(
+            response.price_in_atomic_units(6),
+            U256::from_dec_str(&1e6.to_string()).unwrap()
+        );
+    }
+
+    #[test]
+    fn price_in_keeps_six_digits_precision() {
+        let response = ReservoirOracleResponse {
+            price: 1.1234567,
+            message: ReservoirOracleMessage {
+                id: "".to_string(),
+                payload: Bytes::from_str("0x1213").unwrap(),
+                signature: Bytes::from_str("0x1213").unwrap(),
+            },
+            data: Bytes::from_str("0x1213").unwrap(),
+        };
+        assert_eq!(
+            response.price_in_atomic_units(6),
+            U256::from_dec_str(&1.123456e6.to_string()).unwrap()
+        );
+    }
 }
