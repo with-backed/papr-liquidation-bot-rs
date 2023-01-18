@@ -60,7 +60,7 @@ pub async fn max_collection_bid(
     price_kind: PriceKind,
     quote_currency: &str,
     twap_seconds: Option<u32>,
-) -> Result<ReservoirOracleResponse, Error> {
+) -> Result<ReservoirOracleResponse, eyre::Error> {
     let api_key = env::var("RESERVOIR_API_KEY").expect("RESERVOIR_API_KEY not set");
     let base_url = env::var("RESERVOIR_URL").expect("RESERVOIR_URL not set");
     let url = format!(

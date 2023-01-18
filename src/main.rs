@@ -1,56 +1,43 @@
 use ethers::types::U256;
 use tokio::runtime::Runtime;
 
-mod papr_subgraph;
+mod client;
+mod queries;
 mod reservoir;
 use crate::{
-    papr_subgraph::{
-        collateral_by_controller::CollateralByControllerAllowedCollaterals as Collateral,
-        collateral_vaults_exceeding_debt_per_collateral,
+    client::GraphQLClient,
+    queries::{
         all_controllers::AllControllersPaprControllers as Controller,
+        collateral_by_controller::CollateralByControllerAllowedCollaterals as Collateral,
         vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
     reservoir::{max_collection_bid, PriceKind, ReservoirOracleResponse},
 };
 
-fn main() {
-    /// IGNORE FOR NOW
-    let runtime = Runtime::new().unwrap();
-    let oracle_info = runtime.block_on(async {
-        match max_collection_bid(
-            "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-            PriceKind::Lower,
-            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-            Some(1),
-        )
-        .await
-        {
-            Ok(body) => {
-                println!("Response body: {}", body.price);
-                return Some(body);
-            }
-            Err(err) => {
-                eprintln!("Error: {}", err);
-                return None;
-            }
-        }
-    });
-    runtime.block_on(async {
-        match collateral_vaults_exceeding_debt_per_collateral(
+#[tokio::main]
+async fn main() -> Result<(), eyre::Error> {
+    // IGNORE FOR NOW
+
+    let oracle_info = max_collection_bid(
+        "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+        PriceKind::Lower,
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        Some(1),
+    )
+    .await?;
+    println!("Oracle info price: {}", oracle_info.price);
+
+    let gql = GraphQLClient::default();
+    let response = gql
+        .collateral_vaults_exceeding_debt_per_collateral(
             "0x6df74b0653ba2b622d911ef5680d1776d850ace9",
             "0x8232c5fd480c2a74d2f25d3362f262ff3511ce49",
             U256::from_dec_str("246987190433877370000").unwrap(),
         )
-        .await
-        {
-            Ok(body) => {
-                println!("Response body: {}", body.first().unwrap().account);
-            }
-            Err(err) => {
-                eprintln!("Error: {}", err);
-            }
-        }
-    });
+        .await?;
+    println!("Response: {:?}", response.first().unwrap().account);
+
+    Ok(())
 }
 
 // returns auction objects + auction ID? useful if auction starter
@@ -59,20 +46,24 @@ fn main() {
 async fn start_liqudations(controller: Controller) {}
 
 async fn liquidatable_vaults(
+    client: &GraphQLClient,
     controller: Controller,
     collateral: Collateral,
     target: U256,
     oracle_info: ReservoirOracleResponse,
-) -> Result<Vec<Vault>, Box<dyn std::error::Error>> {
+) -> Result<Vec<Vault>, eyre::Error> {
     let price_atomic = oracle_info.price_in_atomic_units(controller.underlying.decimals as u8);
     let max_debt = max_debt(price_atomic, controller.max_ltv_as_u256(), target);
-    let res = collateral_vaults_exceeding_debt_per_collateral(
-        &controller.id,
-        &collateral.token.id,
-        max_debt,
-    )
-    .await
-    .expect("error fetching vaults exeeding debt per collateral");
+    let res = client
+        .collateral_vaults_exceeding_debt_per_collateral(
+            &controller.id,
+            &collateral.token.id,
+            max_debt,
+        )
+        .await
+        .map_err(|err| {
+            eyre::eyre!("error fetching vaults exeeding debt per collateral: {err:?}")
+        })?;
 
     return Ok(res);
 }
@@ -93,7 +84,7 @@ mod tests {
     #[test]
     fn max_debt_correctly_computes() {
         // worth 1 USDC
-        let value = u256_from_str(&"10").pow(u256_from_str(&"6"));
+        let value = u256_from_str("10").pow(u256_from_str(&"6"));
         // 50%
         let (max_ltv, _) = u256_from_str(&"10")
             .pow(u256_from_str(&"17"))
