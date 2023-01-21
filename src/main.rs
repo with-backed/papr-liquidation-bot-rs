@@ -1,30 +1,34 @@
 use ethers::types::U256;
 use tokio::runtime::Runtime;
 
-mod client;
-mod queries;
+mod papr_subgraph;
+// mod queries;
 mod reservoir;
 use crate::{
-    client::GraphQLClient,
-    queries::{
+    papr_subgraph::client::GraphQLClient,
+    papr_subgraph::queries::{
         all_controllers::AllControllersPaprControllers as Controller,
         collateral_by_controller::CollateralByControllerAllowedCollaterals as Collateral,
         vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
-    reservoir::{max_collection_bid, PriceKind, ReservoirOracleResponse},
+    reservoir::{
+        client::ReservoirClient,
+        oracle::{OracleResponse, PriceKind},
+    },
 };
 
 #[tokio::main]
 async fn main() -> Result<(), eyre::Error> {
     // IGNORE FOR NOW
 
-    let oracle_info = max_collection_bid(
-        "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
-        PriceKind::Lower,
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        Some(1),
-    )
-    .await?;
+    let oracle_info = ReservoirClient::default()
+        .max_collection_bid(
+            "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+            PriceKind::Lower,
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            Some(1),
+        )
+        .await?;
     println!("Oracle info price: {}", oracle_info.price);
 
     let gql = GraphQLClient::default();
@@ -50,7 +54,7 @@ async fn liquidatable_vaults(
     controller: Controller,
     collateral: Collateral,
     target: U256,
-    oracle_info: ReservoirOracleResponse,
+    oracle_info: OracleResponse,
 ) -> Result<Vec<Vault>, eyre::Error> {
     let price_atomic = oracle_info.price_in_atomic_units(controller.underlying.decimals as u8);
     let max_debt = max_debt(price_atomic, controller.max_ltv_as_u256(), target);

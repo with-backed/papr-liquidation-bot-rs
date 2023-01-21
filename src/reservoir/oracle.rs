@@ -1,10 +1,10 @@
 use ethers::types::{Bytes, U256};
-use reqwest::Client;
-use reqwest::Error;
 use serde::Deserialize;
-use std::env;
 use strum_macros::Display;
 
+// use super::client
+
+#[strum(serialize_all = "camelCase")]
 #[derive(Display)]
 pub enum PriceKind {
     Upper,
@@ -17,27 +17,26 @@ pub enum PriceKind {
 enum OracleQueryParam {
     Kind,
     Currency,
-    #[strum(serialize = "twapSeconds")]
     TwapSeconds,
     Collection,
     Token,
 }
 
 #[derive(Deserialize)]
-pub struct ReservoirOracleResponse {
+pub struct OracleResponse {
     pub price: f64,
-    message: ReservoirOracleMessage,
+    message: OracleMessage,
     data: Bytes,
 }
 
 #[derive(Deserialize)]
-pub struct ReservoirOracleMessage {
+pub struct OracleMessage {
     id: String,
     payload: Bytes,
     signature: Bytes,
 }
 
-impl ReservoirOracleResponse {
+impl OracleResponse {
     pub fn price_in_atomic_units(&self, decimals: u8) -> U256 {
         let one = U256::from_dec_str("10")
             .unwrap()
@@ -55,55 +54,42 @@ impl ReservoirOracleResponse {
     }
 }
 
-pub async fn max_collection_bid(
-    collection: &str,
-    price_kind: PriceKind,
-    quote_currency: &str,
-    twap_seconds: Option<u32>,
-) -> Result<ReservoirOracleResponse, eyre::Error> {
-    let api_key = env::var("RESERVOIR_API_KEY").expect("RESERVOIR_API_KEY not set");
-    let base_url = env::var("RESERVOIR_URL").expect("RESERVOIR_URL not set");
-    let url = format!(
-        "{}/oracle/collections/{}/floor-ask/v3",
-        base_url, collection
-    );
-    let client = Client::new();
-    let res = client
-        .get(&url)
-        .query(&[
+impl crate::reservoir::client::ReservoirClient {
+    pub async fn max_collection_bid(
+        &self,
+        collection: &str,
+        price_kind: PriceKind,
+        quote_currency: &str,
+        twap_seconds: Option<u32>,
+    ) -> Result<OracleResponse, eyre::Error> {
+        let url = format!("/oracle/collections/{}/floor-ask/v3", collection);
+        let query = [
+            (OracleQueryParam::Kind.to_string(), price_kind.to_string()),
             (
-                OracleQueryParam::Kind.to_string().to_lowercase(),
-                price_kind.to_string().to_lowercase(),
-            ),
-            (
-                OracleQueryParam::Currency.to_string().to_lowercase(),
+                OracleQueryParam::Currency.to_string(),
                 quote_currency.to_string(),
             ),
             (
                 OracleQueryParam::TwapSeconds.to_string(),
                 twap_seconds.unwrap_or(0).to_string(),
             ),
-        ])
-        .header("api_key", api_key)
-        .send()
-        .await?
-        .json::<ReservoirOracleResponse>()
-        .await?;
-    Ok(res)
+        ];
+        Ok(self.get::<_, OracleResponse>(&url, query).await?)
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::reservoir::ReservoirOracleMessage;
-    use crate::reservoir::ReservoirOracleResponse;
+    use crate::reservoir::oracle::OracleMessage;
+    use crate::reservoir::oracle::OracleResponse;
     use ethers::types::{Bytes, U256};
     use std::str::FromStr;
 
     #[test]
     fn price_in_atomic_units_computes_correctly() {
-        let response = ReservoirOracleResponse {
+        let response = OracleResponse {
             price: 1.0,
-            message: ReservoirOracleMessage {
+            message: OracleMessage {
                 id: "".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
@@ -118,9 +104,9 @@ mod tests {
 
     #[test]
     fn price_in_keeps_six_digits_precision() {
-        let response = ReservoirOracleResponse {
+        let response = OracleResponse {
             price: 1.1234567,
-            message: ReservoirOracleMessage {
+            message: OracleMessage {
                 id: "".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
