@@ -1,8 +1,6 @@
 use ethers::types::U256;
-use tokio::runtime::Runtime;
 
 mod papr_subgraph;
-// mod queries;
 mod reservoir;
 use crate::{
     papr_subgraph::client::GraphQLClient,
