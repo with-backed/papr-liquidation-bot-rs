@@ -1,13 +1,11 @@
-use ethers::types::{Bytes, U256};
+use ethers::types::U256;
 use graphql_client::{GraphQLQuery, QueryBody, Response};
 use once_cell::sync::Lazy;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::env;
-use std::error::Error;
-use String as BigInt;
 
-use crate::queries::{
+use crate::papr_subgraph::queries::{
     all_controllers, collateral_by_controller, vaults_exceeding_debt_per_collateral,
     AllControllers, CollateralByController, VaultsExceedingDebtPerCollateral,
 };

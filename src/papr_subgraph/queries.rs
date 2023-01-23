@@ -4,22 +4,22 @@ use String as BigInt;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "src/graphql/paprSchema.graphql",
-    query_path = "src/graphql/vaultsExceedingDebtPerCollateral.graphql"
+    schema_path = "src/papr_subgraph/graphql/paprSchema.graphql",
+    query_path = "src/papr_subgraph/graphql/vaultsExceedingDebtPerCollateral.graphql"
 )]
 pub struct VaultsExceedingDebtPerCollateral;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "src/graphql/paprSchema.graphql",
-    query_path = "src/graphql/collateralByController.graphql"
+    schema_path = "src/papr_subgraph/graphql/paprSchema.graphql",
+    query_path = "src/papr_subgraph/graphql/collateralByController.graphql"
 )]
 pub struct CollateralByController;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-    schema_path = "src/graphql/paprSchema.graphql",
-    query_path = "src/graphql/allControllers.graphql"
+    schema_path = "src/papr_subgraph/graphql/paprSchema.graphql",
+    query_path = "src/papr_subgraph/graphql/allControllers.graphql"
 )]
 pub struct AllControllers;
 
