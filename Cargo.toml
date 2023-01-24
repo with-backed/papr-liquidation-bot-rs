@@ -14,3 +14,4 @@ graphql_client = { version = "0.11.0", features = ["reqwest-blocking"] }
 strum_macros = "0.24"
 once_cell = "1.17"
 eyre = "0.6.8"
+lazy_static = "1.4.0"

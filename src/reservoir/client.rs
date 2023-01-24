@@ -4,7 +4,7 @@ use std::env;
 
 static API_KEY: Lazy<String> =
     Lazy::new(|| env::var("RESERVOIR_API_KEY").expect("RESERVOIR_API_KEY not set"));
-static URL: Lazy<String> =
+static BASE_URL: Lazy<String> =
     Lazy::new(|| env::var("RESERVOIR_URL").expect("RESERVOIR_API_KEY not set"));
 
 pub struct ReservoirClient {
@@ -27,7 +27,7 @@ impl ReservoirClient {
     ) -> Result<D, eyre::Error> {
         let res = self
             .client
-            .get(format!("{}{}", URL.to_string(), url))
+            .get(format!("{}{}", BASE_URL.to_string(), url))
             .query(&query)
             .header("api_key", API_KEY.to_string())
             .send()

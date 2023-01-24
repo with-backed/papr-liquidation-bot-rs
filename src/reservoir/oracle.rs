@@ -2,8 +2,6 @@ use ethers::types::{Bytes, U256};
 use serde::Deserialize;
 use strum_macros::Display;
 
-// use super::client
-
 #[strum(serialize_all = "camelCase")]
 #[derive(Display)]
 pub enum PriceKind {
@@ -13,20 +11,19 @@ pub enum PriceKind {
     Spot,
 }
 
+#[strum(serialize_all = "camelCase")]
 #[derive(Display)]
 enum OracleQueryParam {
     Kind,
     Currency,
     TwapSeconds,
     Collection,
-    Token,
 }
 
 #[derive(Deserialize)]
 pub struct OracleResponse {
     pub price: f64,
     message: OracleMessage,
-    data: Bytes,
 }
 
 #[derive(Deserialize)]
@@ -62,8 +59,12 @@ impl crate::reservoir::client::ReservoirClient {
         quote_currency: &str,
         twap_seconds: Option<u32>,
     ) -> Result<OracleResponse, eyre::Error> {
-        let url = format!("/oracle/collections/{}/floor-ask/v3", collection);
+        let url = "/oracle/collections/top-bid/v2";
         let query = [
+            (
+                OracleQueryParam::Collection.to_string(),
+                collection.to_string(),
+            ),
             (OracleQueryParam::Kind.to_string(), price_kind.to_string()),
             (
                 OracleQueryParam::Currency.to_string(),
@@ -94,7 +95,6 @@ mod tests {
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
             },
-            data: Bytes::from_str("0x1213").unwrap(),
         };
         assert_eq!(
             response.price_in_atomic_units(6),
@@ -111,7 +111,6 @@ mod tests {
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
             },
-            data: Bytes::from_str("0x1213").unwrap(),
         };
         assert_eq!(
             response.price_in_atomic_units(6),
