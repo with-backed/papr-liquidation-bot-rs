@@ -55,6 +55,6 @@ lazy_static! {
 
 async fn newTarget(controller_addr_str: &str) -> Result<U256, eyre::Error>  {
     let controller_addr = controller_addr_str.parse::<Address>().unwrap();
-    let controller = PaprController::new(controller_addr, Arc::new(PROVIDER.clone()));
+    let controller = PaprController::new(controller_addr, Arc::clone(&PROVIDER));
     Ok(controller.new_target().call().await?)
 }
