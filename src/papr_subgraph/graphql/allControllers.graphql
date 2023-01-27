@@ -6,5 +6,10 @@ query AllControllers {
         id,
         decimals
     }
+    allowedCollateral {
+      token {
+        id
+      }
+    }
   }
 }

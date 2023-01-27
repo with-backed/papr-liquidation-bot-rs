@@ -1,6 +1,12 @@
-use ethers::types::{Bytes, U256};
+use ethers::{
+    types::{Bytes, Signature, U256},
+    utils::format_bytes32_string,
+};
+use lazy_static::__Deref;
 use serde::Deserialize;
 use strum_macros::Display;
+
+use crate::papr_controller::{Message, OracleInfo, Sig};
 
 #[strum(serialize_all = "camelCase")]
 #[derive(Display)]
@@ -23,14 +29,15 @@ enum OracleQueryParam {
 #[derive(Deserialize)]
 pub struct OracleResponse {
     pub price: f64,
-    message: OracleMessage,
+    pub message: OracleMessage,
 }
 
 #[derive(Deserialize)]
 pub struct OracleMessage {
-    id: String,
-    payload: Bytes,
-    signature: Bytes,
+    pub id: String,
+    pub payload: Bytes,
+    pub timestamp: u64,
+    pub signature: Bytes,
 }
 
 impl OracleResponse {
@@ -48,6 +55,26 @@ impl OracleResponse {
             .expect("price_atomic overflow")
             .checked_div(u256_scalar)
             .expect("price_atomic division error");
+    }
+}
+
+impl OracleMessage {
+    pub fn as_contract_oracle_info(&self) -> Result<OracleInfo, eyre::Error> {
+        let signature_struct = self.signature.to_string().parse::<Signature>()?;
+        let info = OracleInfo {
+            message: Message {
+                id: format_bytes32_string(&self.id)?,
+                payload: self.payload.clone(),
+                timestamp: U256::from_dec_str(&self.timestamp.to_string())?,
+                signature: self.signature.clone(),
+            },
+            sig: Sig {
+                r: format_bytes32_string(&signature_struct.r.to_string())?,
+                s: format_bytes32_string(&signature_struct.s.to_string())?,
+                v: signature_struct.v as u8,
+            },
+        };
+        Ok(info)
     }
 }
 

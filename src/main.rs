@@ -1,5 +1,4 @@
-use ethers::types::U256;
-use reservoir::orders;
+use ethers::types::{Signature, U256};
 mod papr_controller;
 mod papr_subgraph;
 mod provider;
@@ -28,7 +27,7 @@ async fn main() -> Result<(), eyre::Error> {
     //     .await?;
     // println!("Oracle info price: {}", oracle_info.price);
 
-    let x = start_liquidations_for_whitelisted_controllers();
+    // let x = start_liquidations_for_whitelisted_controllers();
 
     // let bids = ReservoirClient::default()
     //     .bids("0x42069ABFE407C60cf4ae4112bEDEaD391dBa1cdB", None)
@@ -173,6 +172,8 @@ async fn collection_bids_gt_percent_of_top_bid(
             None, // 604800 = 7 days
         )
         .await?;
+    println!("{}", oracle_info.message.signature);
+    // println!("{}", oracle_info.message.signature.parse::<Signature>().unwrap());
 
     println!("top bid {}", oracle_info.price);
 

@@ -5,7 +5,7 @@ use ethers::{
     signers::{LocalWallet, Signer, Wallet},
     types::U256,
 };
-use once_cell::sync::{Lazy, OnceCell};
+use once_cell::sync::Lazy;
 use std::{env, sync::Arc};
 
 static ETH_RPC_PROVIDER: Lazy<String> =

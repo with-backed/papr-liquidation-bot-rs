@@ -1,67 +1,110 @@
 use crate::{
-    papr_controller,
+    papr_controller::{Collateral, OracleInfo, PaprController},
     papr_subgraph::client::GraphQLClient,
     papr_subgraph::queries::{
         all_controllers::AllControllersPaprControllers as Controller,
-        collateral_by_controller::CollateralByControllerAllowedCollaterals as Collateral,
+        all_controllers::AllControllersPaprControllersAllowedCollateral as SubgraphCollateral,
         vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
-    reservoir::oracle::OracleResponse,
+    reservoir::{
+        client::ReservoirClient,
+        oracle::OracleResponse,
+        oracle::{self, PriceKind},
+    },
 };
-use ethers::{prelude::abigen, types::U256};
+use ethers::{
+    prelude::abigen,
+    types::{Address, U256},
+};
+use once_cell::sync::Lazy;
 use std::collections::HashSet;
 
-// goerli
-lazy_static! {
-    static ref WHITELIST: HashSet<&'static str> = {
-        let mut m = HashSet::new();
-        m.insert("0x6df74b0653ba2b622d911ef5680d1776d850ace9");
-        m.insert("0x9b74e0be4220317dc2f796d3ed865ccb72698020");
-        m
-    };
-}
+const USDC: Lazy<String> = Lazy::new(|| "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48".to_string());
+const SEVEN_DAYS_SECONDS: u32 = 604800;
 
-pub async fn start_liquidations_for_whitelisted_controllers() {
-    let controllers = GraphQLClient::default()
-        .all_papr_controllers()
-        .await
-        .unwrap();
+// goerli
+pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
+    let mut m = HashSet::new();
+    m.insert("0x6df74b0653ba2b622d911ef5680d1776d850ace9");
+    m.insert("0x9b74e0be4220317dc2f796d3ed865ccb72698020");
+    m
+});
+
+pub async fn start_liquidations_for_whitelisted_controllers(
+    reservoir: &ReservoirClient,
+    graphql: &GraphQLClient,
+) {
+    let controllers = graphql.all_papr_controllers().await.unwrap();
 
     for controller in controllers {
         if WHITELIST.contains(&*controller.id) {
-            start_liqudations(controller);
+            start_liqudations_for_controller(controller, reservoir, graphql);
         }
     }
 }
 
-async fn start_liqudations(controller: Controller) {
-    // papr_controller.new_target();
-    // fetch target for controller
-    // fetch oracle info
-    // let controller = PaprController::new(controller.id.parse::<Address>()?, )
+async fn start_liqudations_for_controller(
+    controller: Controller,
+    reservoir: &ReservoirClient,
+    graphql: &GraphQLClient,
+) -> Result<(), eyre::Error> {
+    let controller_provider = PaprController::new(&controller.id);
+    let target = controller_provider.new_target().await?;
+    let quote_currency = &USDC.to_string();
+    let max_ltv = controller.max_ltv_as_u256();
+    for collateral in controller.allowed_collateral {
+        let oracle_response = reservoir
+            .max_collection_bid(
+                &collateral.token.id,
+                PriceKind::Twap,
+                quote_currency,
+                Some(SEVEN_DAYS_SECONDS),
+            )
+            .await?;
+        let max = max_debt(oracle_response.price_in_atomic_units(6), max_ltv, target);
+        let liquidatable_values = graphql
+            .collateral_vaults_exceeding_debt_per_collateral(
+                &controller.id,
+                &collateral.token.id,
+                max,
+            )
+            .await?;
+        start_liquidations_for_vaults(liquidatable_values, oracle_response, &controller_provider)
+            .await?;
+    }
+    Ok(())
 }
 
-async fn liquidatable_vaults(
-    client: &GraphQLClient,
-    controller: Controller,
-    collateral: Collateral,
-    target: U256,
-    oracle_info: OracleResponse,
-) -> Result<Vec<Vault>, eyre::Error> {
-    let price_atomic = oracle_info.price_in_atomic_units(controller.underlying.decimals as u8);
-    let max_debt = max_debt(price_atomic, controller.max_ltv_as_u256(), target);
-    let res = client
-        .collateral_vaults_exceeding_debt_per_collateral(
-            &controller.id,
-            &collateral.token.id,
-            max_debt,
-        )
-        .await
-        .map_err(|err| {
-            eyre::eyre!("error fetching vaults exeeding debt per collateral: {err:?}")
-        })?;
-
-    return Ok(res);
+async fn start_liquidations_for_vaults(
+    vaults: Vec<Vault>,
+    oracle_response: OracleResponse,
+    controller_provider: &PaprController,
+) -> Result<(), eyre::Error> {
+    // need to pick a random piece of collateral
+    for vault in vaults {
+        let vault_addr = vault
+            .account
+            .to_string()
+            .parse::<Address>()
+            .expect("error parsing vault address");
+        let collateral = Collateral {
+            addr: vault
+                .token
+                .id
+                .parse::<Address>()
+                .expect("error parsing collateral address"),
+            id: U256::from_dec_str(&vault.collateral.first().unwrap().id)
+                .expect("error parsing collateral id"),
+        };
+        controller_provider
+            .start_liquidation_auction(
+                vault_addr,
+                collateral,
+                oracle_response.message.as_contract_oracle_info()?,
+            )
+            .await?;
+    }
+    Ok(())
 }
 
 fn max_debt(collateral_value_underlying: U256, max_ltv: U256, target: U256) -> U256 {
