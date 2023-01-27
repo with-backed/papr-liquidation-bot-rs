@@ -1,5 +1,5 @@
-
 use crate::{
+    papr_controller,
     papr_subgraph::client::GraphQLClient,
     papr_subgraph::queries::{
         all_controllers::AllControllersPaprControllers as Controller,
@@ -7,7 +7,6 @@ use crate::{
         vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
     reservoir::oracle::OracleResponse,
-    papr_controller
 };
 use ethers::{prelude::abigen, types::U256};
 use std::collections::HashSet;

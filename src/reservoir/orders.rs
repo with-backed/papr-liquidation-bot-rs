@@ -6,7 +6,7 @@ use strum_macros::Display;
 enum OrderQueryParam {
     Collection,
     Limit,
-    SortBy
+    SortBy,
 }
 
 #[derive(Deserialize)]
@@ -47,10 +47,13 @@ impl crate::reservoir::client::ReservoirClient {
         limit: Option<u64>,
     ) -> Result<BidsResponse, eyre::Error> {
         let url = "/orders/bids/v5";
-        let mut query: Vec<(String, String)> = vec![(
-            OrderQueryParam::Collection.to_string(),
-            collection.to_string(),
-        ), (OrderQueryParam::SortBy.to_string(), "price".to_string())];
+        let mut query: Vec<(String, String)> = vec![
+            (
+                OrderQueryParam::Collection.to_string(),
+                collection.to_string(),
+            ),
+            (OrderQueryParam::SortBy.to_string(), "price".to_string()),
+        ];
         if let Some(limit) = limit {
             query.push((OrderQueryParam::Limit.to_string(), limit.to_string()))
         }

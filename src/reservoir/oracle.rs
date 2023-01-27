@@ -66,10 +66,16 @@ impl crate::reservoir::client::ReservoirClient {
                 collection.to_string(),
             ),
             (OracleQueryParam::Kind.to_string(), price_kind.to_string()),
-            (OracleQueryParam::Currency.to_string(), quote_currency.to_string()),
+            (
+                OracleQueryParam::Currency.to_string(),
+                quote_currency.to_string(),
+            ),
         ];
         if let Some(twap_seconds) = twap_seconds {
-            query.push((OracleQueryParam::TwapSeconds.to_string(), twap_seconds.to_string()))
+            query.push((
+                OracleQueryParam::TwapSeconds.to_string(),
+                twap_seconds.to_string(),
+            ))
         }
         // let query = [
         //     (
