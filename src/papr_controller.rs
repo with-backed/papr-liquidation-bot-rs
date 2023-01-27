@@ -58,3 +58,11 @@ async fn newTarget(controller_addr_str: &str) -> Result<U256, eyre::Error>  {
     let controller = PaprController::new(controller_addr, Arc::clone(&PROVIDER));
     Ok(controller.new_target().call().await?)
 }
+
+use crate::provider::signer_provider;
+
+async fn new_target(controller_addr_str: &str) -> Result<U256, eyre::Error>  {
+    let controller_addr = controller_addr_str.parse::<Address>().unwrap();
+    let controller = PaprController::new(controller_addr, Arc::clone(signer_provider()));
+    Ok(controller.new_target().call().await?)
+}

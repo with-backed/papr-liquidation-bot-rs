@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
-use serde::{de::DeserializeOwned, Serialize};
 use std::env;
+use serde::{de::DeserializeOwned, Serialize};
 
 static API_KEY: Lazy<String> =
     Lazy::new(|| env::var("RESERVOIR_API_KEY").expect("RESERVOIR_API_KEY not set"));

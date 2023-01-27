@@ -4,6 +4,7 @@ mod papr_subgraph;
 mod reservoir;
 mod start;
 mod papr_controller;
+mod provider;
 use crate::{
     papr_subgraph::client::GraphQLClient,
     reservoir::{client::ReservoirClient, oracle::PriceKind},
