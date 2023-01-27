@@ -17,7 +17,7 @@ pub struct PaprController {
 
 impl PaprController {
     fn new(controller_addr_str: &str) -> Self {
-        let controller_addr = controller_addr_str.parse::<Address>().unwrap();
+        let controller_addr = controller_addr_str.parse::<Address>().expect("error parsing controller address");
 
         Self {
             controller: PaprControllerABI::new(controller_addr, Arc::clone(&PROVIDER)),
