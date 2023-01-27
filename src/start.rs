@@ -1,3 +1,4 @@
+
 use crate::{
     papr_subgraph::client::GraphQLClient,
     papr_subgraph::queries::{
@@ -6,6 +7,7 @@ use crate::{
         vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
     reservoir::oracle::OracleResponse,
+    papr_controller
 };
 use ethers::{prelude::abigen, types::U256};
 use std::collections::HashSet;
@@ -33,9 +35,8 @@ pub async fn start_liquidations_for_whitelisted_controllers() {
     }
 }
 
-abigen!(PaprController, "src/abis/PaprController.json");
-
 async fn start_liqudations(controller: Controller) {
+    // papr_controller.new_target();
     // fetch target for controller
     // fetch oracle info
     // let controller = PaprController::new(controller.id.parse::<Address>()?, )

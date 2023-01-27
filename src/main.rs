@@ -3,6 +3,7 @@ use reservoir::orders;
 mod papr_subgraph;
 mod reservoir;
 mod start;
+mod papr_controller;
 use crate::{
     papr_subgraph::client::GraphQLClient,
     reservoir::{client::ReservoirClient, oracle::PriceKind},
@@ -143,9 +144,11 @@ async fn collection_bids_gt_percent_of_top_bid(collection: &str, percent: f64) -
             collection,
             PriceKind::Twap,
             "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-            Some(604800), // 7 days
+            None, // 604800 = 7 days
         )
         .await?;
+    
+    println!("top bid {}", oracle_info.price);
 
     collection_bids_gte(collection, oracle_info.price * percent).await
 }

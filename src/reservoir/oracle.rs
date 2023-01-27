@@ -60,21 +60,28 @@ impl crate::reservoir::client::ReservoirClient {
         twap_seconds: Option<u32>,
     ) -> Result<OracleResponse, eyre::Error> {
         let url = "/oracle/collections/top-bid/v2";
-        let query = [
+        let mut query: Vec<(String, String)> = vec![
             (
                 OracleQueryParam::Collection.to_string(),
                 collection.to_string(),
             ),
             (OracleQueryParam::Kind.to_string(), price_kind.to_string()),
-            (
-                OracleQueryParam::Currency.to_string(),
-                quote_currency.to_string(),
-            ),
-            (
-                OracleQueryParam::TwapSeconds.to_string(),
-                twap_seconds.unwrap_or(0).to_string(),
-            ),
+            (OracleQueryParam::Currency.to_string(), quote_currency.to_string()),
         ];
+        if let Some(twap_seconds) = twap_seconds {
+            query.push((OracleQueryParam::TwapSeconds.to_string(), twap_seconds.to_string()))
+        }
+        // let query = [
+        //     (
+        //         OracleQueryParam::Collection.to_string(),
+        //         collection.to_string(),
+        //     ),
+        //     (OracleQueryParam::Kind.to_string(), price_kind.to_string()),
+        //     (
+        //         OracleQueryParam::TwapSeconds.to_string(),
+        //         twap_seconds.unwrap_or(0).to_string(),
+        //     ),
+        // ];
         Ok(self.get::<_, OracleResponse>(&url, query).await?)
     }
 }
