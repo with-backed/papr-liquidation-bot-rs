@@ -19,7 +19,6 @@ use ethers::{
 use once_cell::sync::Lazy;
 use std::collections::HashSet;
 
-const USDC: Lazy<String> = Lazy::new(|| "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48".to_string());
 const SEVEN_DAYS_SECONDS: u32 = 604800;
 
 // goerli
@@ -50,14 +49,13 @@ async fn start_liqudations_for_controller(
 ) -> Result<(), eyre::Error> {
     let controller_provider = PaprController::new(&controller.id);
     let target = controller_provider.new_target().await?;
-    let quote_currency = &USDC.to_string();
     let max_ltv = controller.max_ltv_as_u256();
     for collateral in controller.allowed_collateral {
         let oracle_response = reservoir
             .max_collection_bid(
                 &collateral.token.id,
                 PriceKind::Twap,
-                quote_currency,
+                &controller.underlying.id,
                 Some(SEVEN_DAYS_SECONDS),
             )
             .await?;
