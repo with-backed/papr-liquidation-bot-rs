@@ -26,20 +26,28 @@ pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let mut m = HashSet::new();
     m.insert("0x6df74b0653ba2b622d911ef5680d1776d850ace9");
     m.insert("0x9b74e0be4220317dc2f796d3ed865ccb72698020");
+    m.insert("0x1c262eca411891f984719edb9931354846e61756");
+    m.insert("0x5b58a1fc87f997de5fa70e28ad50eb2c4f50b2d7");
+    m.insert("0x9ccc1b9960c7a523dc743bb3afb54137ad13d45b");
+    m.insert("0x9de959beb8c84710e929b2182c97007f3c372d73");
+    m.insert("0xe6004ac92b91015e04de003ecdf068045d37781b");
     m
 });
 
 pub async fn start_liquidations_for_whitelisted_controllers(
     reservoir: &ReservoirClient,
     graphql: &GraphQLClient,
-) {
+) -> Result<(), eyre::Error> {
     let controllers = graphql.all_papr_controllers().await.unwrap();
 
     for controller in controllers {
         if WHITELIST.contains(&*controller.id) {
-            start_liqudations_for_controller(controller, reservoir, graphql);
+            println!("starting for {}", controller.id);
+            println!("quote currency {}", controller.underlying.id);
+            start_liqudations_for_controller(controller, reservoir, graphql).await?;
         }
     }
+    Ok(())
 }
 
 async fn start_liqudations_for_controller(
@@ -51,23 +59,30 @@ async fn start_liqudations_for_controller(
     let target = controller_provider.new_target().await?;
     let max_ltv = controller.max_ltv_as_u256();
     for collateral in controller.allowed_collateral {
-        let oracle_response = reservoir
+        println!("fetching price for collateral {}", collateral.token.id);
+        let oracle_response_result = reservoir
             .max_collection_bid(
                 &collateral.token.id,
                 PriceKind::Twap,
                 &controller.underlying.id,
                 Some(SEVEN_DAYS_SECONDS),
             )
-            .await?;
-        let max = max_debt(oracle_response.price_in_atomic_units(6), max_ltv, target);
-        let liquidatable_values = graphql
+            .await;
+        if let Some(err) = oracle_response_result.as_ref().err() {
+            println!("oracle err: {}", err);
+            continue;
+        }
+        let oracle_response = oracle_response_result.unwrap();
+        let max = max_debt(oracle_response.price_in_atomic_units(controller.underlying.decimals as u8), max_ltv, target);
+        let liquidatable_vaults = graphql
             .collateral_vaults_exceeding_debt_per_collateral(
                 &controller.id,
                 &collateral.token.id,
                 max,
             )
             .await?;
-        start_liquidations_for_vaults(liquidatable_values, oracle_response, &controller_provider)
+        println!("found {} liquidatable", liquidatable_vaults.len());
+        start_liquidations_for_vaults(liquidatable_vaults, oracle_response, &controller_provider)
             .await?;
     }
     Ok(())
