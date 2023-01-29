@@ -47,7 +47,7 @@ async fn start_liqudations_for_controller(
     reservoir: &ReservoirClient,
     graphql: &GraphQLClient,
 ) -> Result<(), eyre::Error> {
-    let controller_provider = PaprController::new(&controller.id);
+    let controller_provider = PaprController::new(&controller.id)?;
     let target = controller_provider.new_target().await?;
     let max_ltv = controller.max_ltv_as_u256()?;
     for collateral in controller.allowed_collateral {
@@ -61,6 +61,7 @@ async fn start_liqudations_for_controller(
             )
             .await;
         if let Some(err) = oracle_response_result.as_ref().err() {
+            // mainly to handle goerli issues
             println!("oracle err: {}", err);
             continue;
         }
@@ -80,6 +81,7 @@ async fn start_liqudations_for_controller(
         println!("found {} liquidatable vaults", liquidatable_vaults.len());
         start_liquidations_for_vaults(liquidatable_vaults, oracle_response, &controller_provider)
             .await?;
+        // TODO should store auction IDs of started auctions so that we can remember we have a discount
     }
     Ok(())
 }
@@ -93,8 +95,7 @@ async fn start_liquidations_for_vaults(
         let vault_addr = vault
             .account
             .to_string()
-            .parse::<Address>()
-            .expect("error parsing vault address");
+            .parse::<Address>()?;
         let collateral = Collateral {
             addr: vault.token.id.parse::<Address>()?,
             // vault.collateral.first() must exist otherwise the vault would not be liquidatable

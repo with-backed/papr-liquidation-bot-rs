@@ -16,14 +16,13 @@ pub struct PaprController {
 }
 
 impl PaprController {
-    pub fn new(controller_addr_str: &str) -> Self {
+    pub fn new(controller_addr_str: &str) -> Result<Self, eyre::Error> {
         let controller_addr = controller_addr_str
-            .parse::<Address>()
-            .expect("error parsing controller");
+            .parse::<Address>()?;
 
-        Self {
-            controller: PaprControllerABI::new(controller_addr, Arc::clone(&PROVIDER)),
-        }
+        Ok(Self {
+            controller: PaprControllerABI::new(controller_addr, Arc::clone(&PROVIDER))
+        })
     }
 
     pub async fn new_target(&self) -> Result<U256, eyre::Error> {
@@ -36,13 +35,13 @@ impl PaprController {
         collateral: Collateral,
         oracle_info: OracleInfo,
     ) -> Result<TransactionReceipt, eyre::Error> {
-        Ok(self
+        self
             .controller
             .start_liquidation_auction(account, collateral, oracle_info)
             .send()
             .await?
             .await?
-            .expect("start_liquidation_auction transaction error"))
+            .ok_or(eyre::eyre!("start_liquidation_auction no transaction receipt"))
         // TODO could dig in the logs here to return the auction object
     }
 }

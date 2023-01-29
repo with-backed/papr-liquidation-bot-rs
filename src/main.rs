@@ -194,7 +194,3 @@ async fn collection_bids_gte(collection: &str, price: f64) -> Result<usize, eyre
 
     return Ok(count);
 }
-
-// returns auction objects + auction ID? useful if auction starter
-// wants to keep track of auctions they started: modeling your discount is
-// a bit tough?
