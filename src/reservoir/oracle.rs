@@ -6,7 +6,7 @@ use lazy_static::__Deref;
 use serde::Deserialize;
 use strum_macros::Display;
 
-use crate::papr_controller::{Message, OracleInfo, Sig};
+use crate::papr_controller;
 
 #[strum(serialize_all = "camelCase")]
 #[derive(Display)]
@@ -41,34 +41,34 @@ pub struct OracleMessage {
 }
 
 impl OracleResponse {
-    pub fn price_in_atomic_units(&self, decimals: u8) -> U256 {
-        let one = U256::from_dec_str("10")
-            .unwrap()
-            .pow(U256::from_dec_str(&decimals.to_string()).unwrap());
+    pub fn price_in_atomic_units(&self, decimals: u8) -> Result<U256, eyre::Error> {
+        let one = U256::from_dec_str("10")?
+            .pow(U256::from_dec_str(&decimals.to_string())?);
         // scalar to prevent loss of precison when converting to atomic
         let scalar = 1e6;
-        let u256_scalar = U256::from_dec_str(&scalar.to_string()).unwrap();
+        let u256_scalar = U256::from_dec_str(&scalar.to_string())?;
         let scaled_price = (self.price * scalar).floor();
-        let u256_scaled_price = U256::from_dec_str(&scaled_price.to_string()).unwrap();
-        return one
+        let u256_scaled_price = U256::from_dec_str(&scaled_price.to_string())?;
+        let result = one
             .checked_mul(u256_scaled_price)
-            .expect("price_atomic overflow")
+            .ok_or(eyre::eyre!("price_atomic overflow"))?
             .checked_div(u256_scalar)
-            .expect("price_atomic division error");
+            .ok_or(eyre::eyre!("price_atomic division error"))?;
+        Ok(result)
     }
 }
 
 impl OracleMessage {
-    pub fn as_contract_oracle_info(&self) -> Result<OracleInfo, eyre::Error> {
+    pub fn as_contract_oracle_info(&self) -> Result<papr_controller::OracleInfo, eyre::Error> {
         let signature_struct = self.signature.to_string().parse::<Signature>()?;
-        let info = OracleInfo {
-            message: Message {
+        let info = papr_controller::OracleInfo {
+            message: papr_controller::Message {
                 id: format_bytes32_string(&self.id)?,
                 payload: self.payload.clone(),
                 timestamp: U256::from_dec_str(&self.timestamp.to_string())?,
                 signature: self.signature.clone(),
             },
-            sig: Sig {
+            sig: papr_controller::Sig {
                 r: format_bytes32_string(&signature_struct.r.to_string())?,
                 s: format_bytes32_string(&signature_struct.s.to_string())?,
                 v: signature_struct.v as u8,
@@ -104,17 +104,6 @@ impl crate::reservoir::client::ReservoirClient {
                 twap_seconds.to_string(),
             ))
         }
-        // let query = [
-        //     (
-        //         OracleQueryParam::Collection.to_string(),
-        //         collection.to_string(),
-        //     ),
-        //     (OracleQueryParam::Kind.to_string(), price_kind.to_string()),
-        //     (
-        //         OracleQueryParam::TwapSeconds.to_string(),
-        //         twap_seconds.unwrap_or(0).to_string(),
-        //     ),
-        // ];
         Ok(self.get::<_, OracleResponse>(&url, query).await?)
     }
 }
@@ -134,27 +123,31 @@ mod tests {
                 id: "".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
+                timestamp: 1
             },
         };
         assert_eq!(
-            response.price_in_atomic_units(6),
+            response.price_in_atomic_units(6).unwrap(),
             U256::from_dec_str(&1e6.to_string()).unwrap()
         );
     }
 
     #[test]
-    fn price_in_keeps_six_digits_precision() {
+    fn price_in_atomic_units_keeps_six_digits_precision() {
         let response = OracleResponse {
             price: 1.1234567,
             message: OracleMessage {
                 id: "".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
+                timestamp: 1
             },
         };
         assert_eq!(
-            response.price_in_atomic_units(6),
+            response.price_in_atomic_units(6).unwrap(),
             U256::from_dec_str(&1.123456e6.to_string()).unwrap()
         );
     }
+
+    // TODO test as_contract_oracle_info
 }

@@ -77,13 +77,6 @@ impl GraphQLClient {
     ) -> Result<D, eyre::Error> {
         let response = self.client.post(&*SUBGRAPH_URL).json(&query).send().await?;
         let body: Response<D> = response.json().await?;
-        // if let Some(errors) = body.errors {
-        //     println!("there are errors:");
-
-        //     for error in &errors {
-        //         println!("{:?}", error);
-        //     }
-        // }
         body.data
             .ok_or(eyre::eyre!("missing response data for query"))
     }

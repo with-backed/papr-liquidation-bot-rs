@@ -57,7 +57,7 @@ async fn start_liqudations_for_controller(
 ) -> Result<(), eyre::Error> {
     let controller_provider = PaprController::new(&controller.id);
     let target = controller_provider.new_target().await?;
-    let max_ltv = controller.max_ltv_as_u256();
+    let max_ltv = controller.max_ltv_as_u256()?;
     for collateral in controller.allowed_collateral {
         println!("fetching price for collateral {}", collateral.token.id);
         let oracle_response_result = reservoir
@@ -72,8 +72,8 @@ async fn start_liqudations_for_controller(
             println!("oracle err: {}", err);
             continue;
         }
-        let oracle_response = oracle_response_result.unwrap();
-        let max = max_debt(oracle_response.price_in_atomic_units(controller.underlying.decimals as u8), max_ltv, target);
+        let oracle_response = oracle_response_result?;
+        let max = max_debt(oracle_response.price_in_atomic_units(controller.underlying.decimals as u8)?, max_ltv, target)?;
         let liquidatable_vaults = graphql
             .collateral_vaults_exceeding_debt_per_collateral(
                 &controller.id,
@@ -93,7 +93,6 @@ async fn start_liquidations_for_vaults(
     oracle_response: OracleResponse,
     controller_provider: &PaprController,
 ) -> Result<(), eyre::Error> {
-    // need to pick a random piece of collateral
     for vault in vaults {
         let vault_addr = vault
             .account
@@ -104,10 +103,9 @@ async fn start_liquidations_for_vaults(
             addr: vault
                 .token
                 .id
-                .parse::<Address>()
-                .expect("error parsing collateral address"),
-            id: U256::from_dec_str(&vault.collateral.first().unwrap().id)
-                .expect("error parsing collateral id"),
+                .parse::<Address>()?,
+            // vault.collateral.first() must exist otherwise the vault would not be liquidatable 
+            id: U256::from_dec_str(&vault.collateral.first().unwrap().id)?
         };
         controller_provider
             .start_liquidation_auction(
@@ -120,12 +118,13 @@ async fn start_liquidations_for_vaults(
     Ok(())
 }
 
-fn max_debt(collateral_value_underlying: U256, max_ltv: U256, target: U256) -> U256 {
-    return collateral_value_underlying
+fn max_debt(collateral_value_underlying: U256, max_ltv: U256, target: U256) -> Result<U256, eyre::Error> {
+    let max = collateral_value_underlying
         .checked_mul(max_ltv)
-        .expect("Max debt multiplication overflow")
+        .ok_or(eyre::eyre!("max_debt multiplication overflow"))?
         .checked_div(target)
-        .expect("Max debt divide by 0");
+        .ok_or(eyre::eyre!("max_debt divide by 0"))?;
+    Ok(max)
 }
 
 #[cfg(test)]
@@ -145,7 +144,7 @@ mod tests {
         let (papr_price, _) = u256_from_str(&"10")
             .pow(u256_from_str(&"6"))
             .overflowing_mul(u256_from_str(&"2"));
-        let result = max_debt(value, max_ltv, papr_price);
+        let result = max_debt(value, max_ltv, papr_price).unwrap();
         // (1 * .5)/2 = 0.25 => 0.25e18, papr has 18 decimals
         let (expected, _) = u256_from_str(&"10")
             .pow(u256_from_str(&"16"))
@@ -154,19 +153,19 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Max debt multiplication overflow")]
     fn max_debt_panics_if_multiplication_overflows() {
-        max_debt(U256::max_value(), u256_from_str(&"5"), u256_from_str(&"5"));
+        let result = max_debt(U256::max_value(), u256_from_str(&"5"), u256_from_str(&"5"));
+        assert_eq!("max_debt multiplication overflow", result.err().unwrap().to_string());
     }
 
     #[test]
-    #[should_panic(expected = "Max debt divide by 0")]
     fn max_debt_panics_if_division_underflows() {
-        max_debt(
+        let result = max_debt(
             u256_from_str(&"10"),
             u256_from_str(&"5"),
             u256_from_str(&"0"),
         );
+        assert_eq!("max_debt divide by 0", result.err().unwrap().to_string());
     }
 
     fn u256_from_str(i: &str) -> U256 {

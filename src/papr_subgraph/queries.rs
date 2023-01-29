@@ -24,7 +24,7 @@ pub struct CollateralByController;
 pub struct AllControllers;
 
 impl all_controllers::AllControllersPaprControllers {
-    pub fn max_ltv_as_u256(&self) -> U256 {
-        return U256::from_dec_str(&self.max_ltv).expect("max_ltv_as_u256 error");
+    pub fn max_ltv_as_u256(&self) -> Result<U256, eyre::Error> {
+        Ok(U256::from_dec_str(&self.max_ltv)?)
     }
 }
