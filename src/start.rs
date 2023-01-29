@@ -1,21 +1,13 @@
 use crate::{
-    papr_controller::{Collateral, OracleInfo, PaprController},
+    papr_controller::{Collateral, PaprController},
     papr_subgraph::client::GraphQLClient,
     papr_subgraph::queries::{
         all_controllers::AllControllersPaprControllers as Controller,
-        all_controllers::AllControllersPaprControllersAllowedCollateral as SubgraphCollateral,
         vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
-    reservoir::{
-        client::ReservoirClient,
-        oracle::OracleResponse,
-        oracle::{self, PriceKind},
-    },
+    reservoir::{client::ReservoirClient, oracle::OracleResponse, oracle::PriceKind},
 };
-use ethers::{
-    prelude::abigen,
-    types::{Address, U256},
-};
+use ethers::types::{Address, U256};
 use once_cell::sync::Lazy;
 use std::collections::HashSet;
 

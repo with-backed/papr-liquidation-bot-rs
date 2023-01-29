@@ -73,7 +73,6 @@ dependencies = [
  "ethers",
  "eyre",
  "graphql_client",
- "lazy_static",
  "once_cell",
  "reqwest",
  "serde",

@@ -1,4 +1,3 @@
-use ethers::types::{Signature, U256};
 mod papr_controller;
 mod papr_subgraph;
 mod provider;
@@ -9,9 +8,6 @@ use crate::{
     reservoir::{client::ReservoirClient, oracle::PriceKind},
     start::start_liquidations_for_whitelisted_controllers,
 };
-
-#[macro_use]
-extern crate lazy_static;
 
 #[tokio::main]
 async fn main() -> Result<(), eyre::Error> {

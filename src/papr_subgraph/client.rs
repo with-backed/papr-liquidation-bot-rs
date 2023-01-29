@@ -26,6 +26,7 @@ impl Default for GraphQLClient {
 }
 
 impl GraphQLClient {
+    /// TODO screen out vaults if in min auction spacing time period
     pub async fn collateral_vaults_exceeding_debt_per_collateral(
         &self,
         controller: &str,

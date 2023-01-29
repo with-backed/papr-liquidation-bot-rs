@@ -1,8 +1,8 @@
 use serde::Deserialize;
 use strum_macros::Display;
 
-#[strum(serialize_all = "camelCase")]
 #[derive(Display)]
+#[strum(serialize_all = "camelCase")]
 enum OrderQueryParam {
     Collection,
     Limit,
@@ -29,11 +29,6 @@ pub struct Price {
 pub struct Amount {
     pub usd: f64,
 }
-
-// #[derive(Deserialize)]
-// pub enum CriteriaKind {
-//     Collection
-// }
 
 #[derive(Deserialize)]
 pub struct Criteria {

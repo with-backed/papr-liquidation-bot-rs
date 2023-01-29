@@ -2,12 +2,12 @@ use crate::provider::PROVIDER;
 use ethers::{
     core::k256::ecdsa::SigningKey,
     middleware::SignerMiddleware,
-    prelude::{abigen, PendingTransaction, TransactionReceipt},
+    prelude::{abigen, TransactionReceipt},
     providers::{Http, Provider},
     signers::Wallet,
     types::{Address, U256},
 };
-use std::{env, sync::Arc};
+use std::sync::Arc;
 
 abigen!(PaprControllerABI, "src/abis/PaprController.json");
 

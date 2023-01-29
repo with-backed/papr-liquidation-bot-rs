@@ -2,14 +2,13 @@ use ethers::{
     types::{Bytes, Signature, U256},
     utils::format_bytes32_string,
 };
-use lazy_static::__Deref;
 use serde::Deserialize;
 use strum_macros::Display;
 
 use crate::papr_controller;
 
-#[strum(serialize_all = "camelCase")]
 #[derive(Display)]
+#[strum(serialize_all = "camelCase")]
 pub enum PriceKind {
     Upper,
     Lower,
@@ -17,8 +16,8 @@ pub enum PriceKind {
     Spot,
 }
 
-#[strum(serialize_all = "camelCase")]
 #[derive(Display)]
+#[strum(serialize_all = "camelCase")]
 enum OracleQueryParam {
     Kind,
     Currency,
