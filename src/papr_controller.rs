@@ -43,6 +43,6 @@ impl PaprController {
             .await?
             .await?
             .expect("start_liquidation_auction transaction error"))
-        // TODO could dig in the logs here to return the auction object 
+        // TODO could dig in the logs here to return the auction object
     }
 }

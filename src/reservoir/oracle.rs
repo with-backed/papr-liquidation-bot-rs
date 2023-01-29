@@ -42,8 +42,7 @@ pub struct OracleMessage {
 
 impl OracleResponse {
     pub fn price_in_atomic_units(&self, decimals: u8) -> Result<U256, eyre::Error> {
-        let one = U256::from_dec_str("10")?
-            .pow(U256::from_dec_str(&decimals.to_string())?);
+        let one = U256::from_dec_str("10")?.pow(U256::from_dec_str(&decimals.to_string())?);
         // scalar to prevent loss of precison when converting to atomic
         let scalar = 1e6;
         let u256_scalar = U256::from_dec_str(&scalar.to_string())?;
@@ -123,7 +122,7 @@ mod tests {
                 id: "".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
-                timestamp: 1
+                timestamp: 1,
             },
         };
         assert_eq!(
@@ -140,7 +139,7 @@ mod tests {
                 id: "".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
-                timestamp: 1
+                timestamp: 1,
             },
         };
         assert_eq!(

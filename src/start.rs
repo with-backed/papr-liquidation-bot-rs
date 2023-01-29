@@ -73,7 +73,11 @@ async fn start_liqudations_for_controller(
             continue;
         }
         let oracle_response = oracle_response_result?;
-        let max = max_debt(oracle_response.price_in_atomic_units(controller.underlying.decimals as u8)?, max_ltv, target)?;
+        let max = max_debt(
+            oracle_response.price_in_atomic_units(controller.underlying.decimals as u8)?,
+            max_ltv,
+            target,
+        )?;
         let liquidatable_vaults = graphql
             .collateral_vaults_exceeding_debt_per_collateral(
                 &controller.id,
@@ -81,7 +85,7 @@ async fn start_liqudations_for_controller(
                 max,
             )
             .await?;
-        println!("found {} liquidatable", liquidatable_vaults.len());
+        println!("found {} liquidatable vaults", liquidatable_vaults.len());
         start_liquidations_for_vaults(liquidatable_vaults, oracle_response, &controller_provider)
             .await?;
     }
@@ -100,12 +104,9 @@ async fn start_liquidations_for_vaults(
             .parse::<Address>()
             .expect("error parsing vault address");
         let collateral = Collateral {
-            addr: vault
-                .token
-                .id
-                .parse::<Address>()?,
-            // vault.collateral.first() must exist otherwise the vault would not be liquidatable 
-            id: U256::from_dec_str(&vault.collateral.first().unwrap().id)?
+            addr: vault.token.id.parse::<Address>()?,
+            // vault.collateral.first() must exist otherwise the vault would not be liquidatable
+            id: U256::from_dec_str(&vault.collateral.first().unwrap().id)?,
         };
         controller_provider
             .start_liquidation_auction(
@@ -118,7 +119,11 @@ async fn start_liquidations_for_vaults(
     Ok(())
 }
 
-fn max_debt(collateral_value_underlying: U256, max_ltv: U256, target: U256) -> Result<U256, eyre::Error> {
+fn max_debt(
+    collateral_value_underlying: U256,
+    max_ltv: U256,
+    target: U256,
+) -> Result<U256, eyre::Error> {
     let max = collateral_value_underlying
         .checked_mul(max_ltv)
         .ok_or(eyre::eyre!("max_debt multiplication overflow"))?
@@ -155,7 +160,10 @@ mod tests {
     #[test]
     fn max_debt_panics_if_multiplication_overflows() {
         let result = max_debt(U256::max_value(), u256_from_str(&"5"), u256_from_str(&"5"));
-        assert_eq!("max_debt multiplication overflow", result.err().unwrap().to_string());
+        assert_eq!(
+            "max_debt multiplication overflow",
+            result.err().unwrap().to_string()
+        );
     }
 
     #[test]
