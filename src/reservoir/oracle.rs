@@ -159,7 +159,13 @@ mod tests {
             timestamp: timestamp,
         };
         let info = message.as_contract_oracle_info().unwrap();
-        // manually checked in solidity
+        assert_eq!(
+            info.message.timestamp,
+            U256::from_dec_str(&timestamp.to_string()).unwrap()
+        );
+        assert_eq!(info.message.payload, message.payload);
+        assert_eq!(info.message.signature, message.signature);
+        // manually checked the below in solidity
         assert_eq!(
             info.message.id,
             [
@@ -167,7 +173,20 @@ mod tests {
                 152, 56, 48, 215, 117, 123, 168, 10, 20, 23, 95, 15, 177, 137
             ]
         );
-        assert_eq!(info.message.timestamp, U256::from_dec_str(&timestamp.to_string()).unwrap());
-        // TODO check others
+        assert_eq!(
+            info.sig.r,
+            [
+                203, 20, 119, 152, 82, 251, 60, 235, 185, 140, 181, 238, 128, 112, 81, 209, 98, 57,
+                97, 8, 182, 88, 34, 162, 197, 33, 71, 215, 57, 161, 0, 251
+            ]
+        );
+        assert_eq!(
+            info.sig.s,
+            [
+                0, 24, 93, 56, 242, 164, 84, 46, 46, 144, 199, 246, 73, 63, 173, 52, 3, 51, 181,
+                225, 249, 194, 242, 12, 46, 209, 149, 106, 86, 52, 14, 2
+            ]
+        );
+        assert_eq!(info.sig.v, 28);
     }
 }
