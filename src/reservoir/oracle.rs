@@ -33,7 +33,7 @@ pub struct OracleResponse {
 
 #[derive(Deserialize)]
 pub struct OracleMessage {
-    pub id: Bytes,
+    pub id: String,
     pub payload: Bytes,
     pub timestamp: u64,
     pub signature: Bytes,
@@ -61,9 +61,7 @@ impl OracleMessage {
         let signature_struct = self.signature.to_string().parse::<Signature>()?;
         let info = papr_controller::OracleInfo {
             message: papr_controller::Message {
-                id: self.id.to_vec().try_into().map_err(|_err: Vec<u8>| {
-                    eyre::eyre!("as_contract_oracle_info err converting id to [u8;32]")
-                })?,
+                id: <[u8; 32]>::from_hex(&self.id[2..])?,
                 payload: self.payload.clone(),
                 timestamp: self.timestamp.into(),
                 signature: self.signature.clone(),
@@ -120,7 +118,7 @@ mod tests {
         let response = OracleResponse {
             price: 1.0,
             message: OracleMessage {
-                id: Bytes::from_str("0x1213").unwrap(),
+                id: "0x1213".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
                 timestamp: 1,
@@ -137,7 +135,7 @@ mod tests {
         let response = OracleResponse {
             price: 1.1234567,
             message: OracleMessage {
-                id: Bytes::from_str("0x1213").unwrap(),
+                id: "0x1213".to_string(),
                 payload: Bytes::from_str("0x1213").unwrap(),
                 signature: Bytes::from_str("0x1213").unwrap(),
                 timestamp: 1,
@@ -153,7 +151,7 @@ mod tests {
     fn as_contract_oracle_info_converts_values_correctly() {
         let timestamp = 1674959723;
         let message = OracleMessage {
-            id: Bytes::from_str("0xc8c8fbbc02b65d74cc2266c31a5d773f5b73983830d7757ba80a14175f0fb189").unwrap(),
+            id: "0xc8c8fbbc02b65d74cc2266c31a5d773f5b73983830d7757ba80a14175f0fb189".to_string(),
             payload: Bytes::from_str("0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000381d2cfbb2fe58000").unwrap(),
             signature: Bytes::from_str("0xcb14779852fb3cebb98cb5ee807051d162396108b65822a2c52147d739a100fb00185d38f2a4542e2e90c7f6493fad340333b5e1f9c2f20c2ed1956a56340e021c").unwrap(),
             timestamp: timestamp,
