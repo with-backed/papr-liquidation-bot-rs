@@ -1,6 +1,6 @@
 use ethers::{
     types::{Bytes, Signature, U256},
-    utils::format_bytes32_string,
+    utils::hex::FromHex,
 };
 use serde::Deserialize;
 use strum_macros::Display;
@@ -61,14 +61,14 @@ impl OracleMessage {
         let signature_struct = self.signature.to_string().parse::<Signature>()?;
         let info = papr_controller::OracleInfo {
             message: papr_controller::Message {
-                id: format_bytes32_string(&self.id)?,
+                id: <[u8; 32]>::from_hex(&self.id[2..])?,
                 payload: self.payload.clone(),
-                timestamp: U256::from_dec_str(&self.timestamp.to_string())?,
+                timestamp: self.timestamp.into(),
                 signature: self.signature.clone(),
             },
             sig: papr_controller::Sig {
-                r: format_bytes32_string(&signature_struct.r.to_string())?,
-                s: format_bytes32_string(&signature_struct.s.to_string())?,
+                r: signature_struct.r.into(),
+                s: signature_struct.s.into(),
                 v: signature_struct.v as u8,
             },
         };

@@ -92,10 +92,7 @@ async fn start_liquidations_for_vaults(
     controller_provider: &PaprController,
 ) -> Result<(), eyre::Error> {
     for vault in vaults {
-        let vault_addr = vault
-            .account
-            .to_string()
-            .parse::<Address>()?;
+        let vault_addr = vault.account.to_string().parse::<Address>()?;
         let collateral = Collateral {
             addr: vault.token.id.parse::<Address>()?,
             // vault.collateral.first() must exist otherwise the vault would not be liquidatable

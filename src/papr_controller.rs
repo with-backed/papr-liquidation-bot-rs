@@ -10,18 +10,16 @@ use ethers::{
 use std::sync::Arc;
 
 abigen!(PaprControllerABI, "src/abis/PaprController.json");
-
 pub struct PaprController {
     controller: PaprControllerABI<SignerMiddleware<Provider<Http>, Wallet<SigningKey>>>,
 }
 
 impl PaprController {
     pub fn new(controller_addr_str: &str) -> Result<Self, eyre::Error> {
-        let controller_addr = controller_addr_str
-            .parse::<Address>()?;
+        let controller_addr = controller_addr_str.parse::<Address>()?;
 
         Ok(Self {
-            controller: PaprControllerABI::new(controller_addr, Arc::clone(&PROVIDER))
+            controller: PaprControllerABI::new(controller_addr, Arc::clone(&PROVIDER)),
         })
     }
 
@@ -35,13 +33,14 @@ impl PaprController {
         collateral: Collateral,
         oracle_info: OracleInfo,
     ) -> Result<TransactionReceipt, eyre::Error> {
-        self
-            .controller
+        self.controller
             .start_liquidation_auction(account, collateral, oracle_info)
             .send()
             .await?
             .await?
-            .ok_or(eyre::eyre!("start_liquidation_auction no transaction receipt"))
+            .ok_or(eyre::eyre!(
+                "start_liquidation_auction no transaction receipt"
+            ))
         // TODO could dig in the logs here to return the auction object
     }
 }
