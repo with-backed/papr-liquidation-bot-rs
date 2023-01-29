@@ -9,9 +9,11 @@ use crate::{
 };
 use ethers::types::{Address, U256};
 use once_cell::sync::Lazy;
-use std::collections::HashSet;
+use std::{collections::HashSet, env};
 
 const SEVEN_DAYS_SECONDS: u32 = 604800;
+static DISABLE_EXECUTE_START_ACTION: Lazy<bool> =
+    Lazy::new(|| env::var("DISABLE_EXECUTE_START_ACTION").unwrap_or("false".to_string()) == "true");
 
 // goerli
 pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
@@ -95,9 +97,24 @@ async fn start_liquidations_for_vaults(
         let vault_addr = vault.account.to_string().parse::<Address>()?;
         let collateral = Collateral {
             addr: vault.token.id.parse::<Address>()?,
-            // vault.collateral.first() must exist otherwise the vault would not be liquidatable
-            id: U256::from_dec_str(&vault.collateral.first().unwrap().id)?,
+            id: U256::from_dec_str(
+                &vault
+                    .collateral
+                    .first()
+                    // should not be possible happen but just incase :)
+                    .ok_or(eyre::eyre!("no collateral in vault"))?
+                    .id,
+            )?,
         };
+        println!(
+            "liquidating collateral {} id {} of account {}",
+            vault.token.id, collateral.id, vault.account
+        );
+
+        if *DISABLE_EXECUTE_START_ACTION {
+            continue;
+        }
+
         controller_provider
             .start_liquidation_auction(
                 vault_addr,
@@ -105,6 +122,7 @@ async fn start_liquidations_for_vaults(
                 oracle_response.message.as_contract_oracle_info()?,
             )
             .await?;
+        println!("liquidation successful");
     }
     Ok(())
 }
