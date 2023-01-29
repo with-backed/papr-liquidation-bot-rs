@@ -63,7 +63,7 @@ impl OracleMessage {
             message: papr_controller::Message {
                 id: <[u8; 32]>::from_hex(&self.id[2..])?,
                 payload: self.payload.clone(),
-                timestamp: self.timestamp.into(),
+                timestamp: U256::from_dec_str(&self.timestamp.to_string())?,
                 signature: self.signature.clone(),
             },
             sig: papr_controller::Sig {
