@@ -1,10 +1,9 @@
 use ethers::{
     types::{Bytes, Signature, U256},
-    utils::hex::{FromHex, ToHex},
+    utils::hex::FromHex,
 };
 use serde::Deserialize;
 use strum_macros::Display;
-
 use crate::papr_controller;
 
 #[derive(Display)]
@@ -149,17 +148,16 @@ mod tests {
 
     #[test]
     fn as_contract_oracle_info_converts_values_correctly() {
-        let timestamp = 1674959723;
         let message = OracleMessage {
             id: "0xc8c8fbbc02b65d74cc2266c31a5d773f5b73983830d7757ba80a14175f0fb189".to_string(),
             payload: Bytes::from_str("0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000381d2cfbb2fe58000").unwrap(),
             signature: Bytes::from_str("0xcb14779852fb3cebb98cb5ee807051d162396108b65822a2c52147d739a100fb00185d38f2a4542e2e90c7f6493fad340333b5e1f9c2f20c2ed1956a56340e021c").unwrap(),
-            timestamp: timestamp,
+            timestamp: 1674959723,
         };
         let info = message.as_contract_oracle_info().unwrap();
         assert_eq!(
             info.message.timestamp,
-            U256::from_dec_str(&timestamp.to_string()).unwrap()
+            U256::from_dec_str(&message.timestamp.to_string()).unwrap()
         );
         assert_eq!(info.message.payload, message.payload);
         assert_eq!(info.message.signature, message.signature);
