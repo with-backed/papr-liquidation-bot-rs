@@ -1,5 +1,5 @@
-query VaultsExceedingDebtPerCollateral($controller: String, $collateral: String, $debtPerCollateral: String) {
-  vaults(where: { controller: $controller, token: $collateral, debtPerCollateral_gt:  $debtPerCollateral}) {
+query VaultsExceedingDebtPerCollateral($controller: String, $collateral: String, $debtPerCollateral: String, $latestAuctionBefore: Int) {
+  vaults(where: { controller: $controller, token: $collateral, debtPerCollateral_gt:  $debtPerCollateral}, latestAuctionStartTime_lt: $latestAuctionBefore) {
     account
     token {
         id

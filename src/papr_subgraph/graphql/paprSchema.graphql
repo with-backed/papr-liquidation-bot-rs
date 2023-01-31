@@ -425,6 +425,7 @@ type AuctionEndEvent {
   timestamp: Int!
   auction: Auction!
   account: Bytes!
+  vault: Vault!
   controller: PaprController!
 }
 
@@ -472,6 +473,27 @@ input AuctionEndEvent_filter {
   account_not_in: [Bytes!]
   account_contains: Bytes
   account_not_contains: Bytes
+  vault: String
+  vault_not: String
+  vault_gt: String
+  vault_lt: String
+  vault_gte: String
+  vault_lte: String
+  vault_in: [String!]
+  vault_not_in: [String!]
+  vault_contains: String
+  vault_contains_nocase: String
+  vault_not_contains: String
+  vault_not_contains_nocase: String
+  vault_starts_with: String
+  vault_starts_with_nocase: String
+  vault_not_starts_with: String
+  vault_not_starts_with_nocase: String
+  vault_ends_with: String
+  vault_ends_with_nocase: String
+  vault_not_ends_with: String
+  vault_not_ends_with_nocase: String
+  vault_: Vault_filter
   controller: String
   controller_not: String
   controller_gt: String
@@ -503,6 +525,7 @@ enum AuctionEndEvent_orderBy {
   timestamp
   auction
   account
+  vault
   controller
 }
 
@@ -511,6 +534,7 @@ type AuctionStartEvent {
   timestamp: Int!
   auction: Auction!
   account: Bytes!
+  vault: Vault!
   controller: PaprController!
 }
 
@@ -558,6 +582,27 @@ input AuctionStartEvent_filter {
   account_not_in: [Bytes!]
   account_contains: Bytes
   account_not_contains: Bytes
+  vault: String
+  vault_not: String
+  vault_gt: String
+  vault_lt: String
+  vault_gte: String
+  vault_lte: String
+  vault_in: [String!]
+  vault_not_in: [String!]
+  vault_contains: String
+  vault_contains_nocase: String
+  vault_not_contains: String
+  vault_not_contains_nocase: String
+  vault_starts_with: String
+  vault_starts_with_nocase: String
+  vault_not_starts_with: String
+  vault_not_starts_with_nocase: String
+  vault_ends_with: String
+  vault_ends_with_nocase: String
+  vault_not_ends_with: String
+  vault_not_ends_with_nocase: String
+  vault_: Vault_filter
   controller: String
   controller_not: String
   controller_gt: String
@@ -589,6 +634,7 @@ enum AuctionStartEvent_orderBy {
   timestamp
   auction
   account
+  vault
   controller
 }
 

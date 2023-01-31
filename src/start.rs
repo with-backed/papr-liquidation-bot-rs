@@ -9,22 +9,21 @@ use crate::{
 };
 use ethers::types::{Address, U256};
 use once_cell::sync::Lazy;
-use std::{collections::HashSet, env};
+use std::{
+    collections::HashSet,
+    env,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 const SEVEN_DAYS_SECONDS: u32 = 604800;
+const TWO_DAYS_SECONDS: u64 = 172800;
 static DISABLE_EXECUTE_START_ACTION: Lazy<bool> =
     Lazy::new(|| env::var("DISABLE_EXECUTE_START_ACTION").unwrap_or("false".to_string()) == "true");
 
 // goerli
 pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let mut m = HashSet::new();
-    m.insert("0x6df74b0653ba2b622d911ef5680d1776d850ace9");
-    m.insert("0x9b74e0be4220317dc2f796d3ed865ccb72698020");
-    m.insert("0x1c262eca411891f984719edb9931354846e61756");
-    m.insert("0x5b58a1fc87f997de5fa70e28ad50eb2c4f50b2d7");
-    m.insert("0x9ccc1b9960c7a523dc743bb3afb54137ad13d45b");
-    m.insert("0x9de959beb8c84710e929b2182c97007f3c372d73");
-    m.insert("0xe6004ac92b91015e04de003ecdf068045d37781b");
+    m.insert("0xd50004ec23ad97cf3a3bbd9718ad9bd274dc1764");
     m
 });
 
@@ -52,6 +51,8 @@ async fn start_liqudations_for_controller(
     let controller_provider = PaprController::new(&controller.id)?;
     let target = controller_provider.new_target().await?;
     let max_ltv = controller.max_ltv_as_u256()?;
+    println!("target {}", target);
+    println!("max_ltv {}", max_ltv);
     for collateral in controller.allowed_collateral {
         println!("fetching price for collateral {}", collateral.token.id);
         let oracle_response_result = reservoir
@@ -68,16 +69,28 @@ async fn start_liqudations_for_controller(
             continue;
         }
         let oracle_response = oracle_response_result?;
+        println!(
+            "price {}",
+            oracle_response
+                .price_in_atomic_units(controller.underlying.decimals as u8)
+                .unwrap()
+        );
         let max = max_debt(
             oracle_response.price_in_atomic_units(controller.underlying.decimals as u8)?,
             max_ltv,
             target,
         )?;
+        println!("max debt {}", max);
         let liquidatable_vaults = graphql
             .collateral_vaults_exceeding_debt_per_collateral(
                 &controller.id,
                 &collateral.token.id,
                 max,
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)?
+                    .as_secs()
+                    .checked_sub(TWO_DAYS_SECONDS)
+                    .ok_or(eyre::eyre!("timestamp error"))?,
             )
             .await?;
         println!("found {} liquidatable vaults", liquidatable_vaults.len());
