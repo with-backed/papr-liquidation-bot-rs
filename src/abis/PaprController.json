@@ -1,0 +1,2018 @@
+{
+    "abi": [
+      {
+        "inputs": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_maxLTV",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "indexMarkRatioMax",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "indexMarkRatioMin",
+            "type": "uint256"
+          },
+          {
+            "internalType": "contract ERC20",
+            "name": "underlying",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleSigner",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "inputs": [],
+        "name": "AccountHasNoDebt",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "AlreadyInitialized",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "AuctionExists",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "CollateralAddressesDoNotMatch",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "DebtAmountExceedsUint184",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "vaultDebt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxDebt",
+            "type": "uint256"
+          }
+        ],
+        "name": "ExceedsMaxDebt",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "FundingPeriodTooLong",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "FundingPeriodTooShort",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "IncorrectOracleSigner",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "received",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "expected",
+            "type": "uint256"
+          }
+        ],
+        "name": "InsufficientPayment",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidAuction",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidCollateral",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidCollateralAccountPair",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidUniswapV3Pool",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "LiquidationsLocked",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "currentPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxPrice",
+            "type": "uint256"
+          }
+        ],
+        "name": "MaxPriceTooLow",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "MinAuctionSpacing",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NotLiquidatable",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "OnlyCollateralOwner",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "OracleMessageTimestampInvalid",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "deadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "name": "PassedDeadline",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "PoolTokensDoNotMatch",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "minOut",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "actualOut",
+            "type": "uint256"
+          }
+        ],
+        "name": "TooLittleOut",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "WrongCurrencyFromOracleMessage",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "WrongIdentifierFromOracleMessage",
+        "type": "error"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "contract ERC721",
+            "name": "collateralAddress",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "AddCollateral",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "contract ERC721",
+            "name": "collateral",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "bool",
+            "name": "isAllowed",
+            "type": "bool"
+          }
+        ],
+        "name": "AllowCollateral",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "auctionID",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          }
+        ],
+        "name": "EndAuction",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "contract ERC721",
+            "name": "collateralAddress",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "IncreaseDebt",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferStarted",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "contract ERC721",
+            "name": "collateralAddress",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "ReduceDebt",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "contract ERC721",
+            "name": "collateralAddress",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "RemoveCollateral",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "discount",
+            "type": "uint256"
+          }
+        ],
+        "name": "SetAuctionCreatorDiscount",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "fundingPeriod",
+            "type": "uint256"
+          }
+        ],
+        "name": "SetFundingPeriod",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "pool",
+            "type": "address"
+          }
+        ],
+        "name": "SetPool",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "auctionID",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "auctionAssetID",
+            "type": "uint256"
+          },
+          {
+            "indexed": true,
+            "internalType": "contract ERC721",
+            "name": "auctionAssetContract",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "nftOwner",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "perPeriodDecayPercentWad",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "secondsInPeriod",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "startPrice",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "contract ERC20",
+            "name": "paymentAsset",
+            "type": "address"
+          }
+        ],
+        "name": "StartAuction",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "newPeriod",
+            "type": "uint256"
+          }
+        ],
+        "name": "UpdateFundingPeriod",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "bool",
+            "name": "locked",
+            "type": "bool"
+          }
+        ],
+        "name": "UpdateLiquidationsLocked",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newPool",
+            "type": "address"
+          }
+        ],
+        "name": "UpdatePool",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "newTarget",
+            "type": "uint256"
+          }
+        ],
+        "name": "UpdateTarget",
+        "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "BIPS_ONE",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "acceptOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "contract ERC721",
+                "name": "addr",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct IPaprController.Collateral[]",
+            "name": "collateralArr",
+            "type": "tuple[]"
+          }
+        ],
+        "name": "addCollateral",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "auctionCreatorDiscountPercentWad",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "nftOwner",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "auctionAssetID",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC721",
+                "name": "auctionAssetContract",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "perPeriodDecayPercentWad",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "secondsInPeriod",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "startPrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC20",
+                "name": "paymentAsset",
+                "type": "address"
+              }
+            ],
+            "internalType": "struct INFTEDA.Auction",
+            "name": "auction",
+            "type": "tuple"
+          }
+        ],
+        "name": "auctionCurrentPrice",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "auctionDecayPeriod",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "nftOwner",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "auctionAssetID",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC721",
+                "name": "auctionAssetContract",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "perPeriodDecayPercentWad",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "secondsInPeriod",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "startPrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC20",
+                "name": "paymentAsset",
+                "type": "address"
+              }
+            ],
+            "internalType": "struct INFTEDA.Auction",
+            "name": "auction",
+            "type": "tuple"
+          }
+        ],
+        "name": "auctionID",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "auctionStartPriceMultiplier",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          }
+        ],
+        "name": "auctionStartTime",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "auctionState",
+        "outputs": [
+          {
+            "internalType": "uint96",
+            "name": "startTime",
+            "type": "uint96"
+          },
+          {
+            "internalType": "address",
+            "name": "starter",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ERC721",
+            "name": "collateralAsset",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "minOut",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint160",
+                "name": "sqrtPriceLimitX96",
+                "type": "uint160"
+              },
+              {
+                "internalType": "address",
+                "name": "swapFeeTo",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "swapFeeBips",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "deadline",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct IPaprController.SwapParams",
+            "name": "params",
+            "type": "tuple"
+          }
+        ],
+        "name": "buyAndReduceDebt",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "contract ERC721",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "collateralOwner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "fundingPeriod",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "mintTo",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ERC721",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "components": [
+              {
+                "components": [
+                  {
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "payload",
+                    "type": "bytes"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "signature",
+                    "type": "bytes"
+                  }
+                ],
+                "internalType": "struct ReservoirOracle.Message",
+                "name": "message",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint8",
+                    "name": "v",
+                    "type": "uint8"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "r",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "s",
+                    "type": "bytes32"
+                  }
+                ],
+                "internalType": "struct ReservoirOracleUnderwriter.Sig",
+                "name": "sig",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct ReservoirOracleUnderwriter.OracleInfo",
+            "name": "oracleInfo",
+            "type": "tuple"
+          }
+        ],
+        "name": "increaseDebt",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "proceedsTo",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ERC721",
+            "name": "collateralAsset",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "minOut",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint160",
+                "name": "sqrtPriceLimitX96",
+                "type": "uint160"
+              },
+              {
+                "internalType": "address",
+                "name": "swapFeeTo",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "swapFeeBips",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "deadline",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct IPaprController.SwapParams",
+            "name": "params",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "components": [
+                  {
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "payload",
+                    "type": "bytes"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "signature",
+                    "type": "bytes"
+                  }
+                ],
+                "internalType": "struct ReservoirOracle.Message",
+                "name": "message",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint8",
+                    "name": "v",
+                    "type": "uint8"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "r",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "s",
+                    "type": "bytes32"
+                  }
+                ],
+                "internalType": "struct ReservoirOracleUnderwriter.Sig",
+                "name": "sig",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct ReservoirOracleUnderwriter.OracleInfo",
+            "name": "oracleInfo",
+            "type": "tuple"
+          }
+        ],
+        "name": "increaseDebtAndSell",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "amountOut",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "contract ERC721",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "isAllowed",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "lastUpdated",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "liquidationAuctionMinSpacing",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "liquidationPenaltyBips",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "liquidationsLocked",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "mark",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "totalCollateraValue",
+            "type": "uint256"
+          }
+        ],
+        "name": "maxDebt",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "maxLTV",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes[]",
+            "name": "data",
+            "type": "bytes[]"
+          }
+        ],
+        "name": "multicall",
+        "outputs": [
+          {
+            "internalType": "bytes[]",
+            "name": "results",
+            "type": "bytes[]"
+          }
+        ],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "newTarget",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "name": "onERC721Received",
+        "outputs": [
+          {
+            "internalType": "bytes4",
+            "name": "",
+            "type": "bytes4"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "oracleSigner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "papr",
+        "outputs": [
+          {
+            "internalType": "contract ERC20",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "pendingOwner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "perPeriodAuctionDecayWAD",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "pool",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "nftOwner",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "auctionAssetID",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC721",
+                "name": "auctionAssetContract",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "perPeriodDecayPercentWad",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "secondsInPeriod",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "startPrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC20",
+                "name": "paymentAsset",
+                "type": "address"
+              }
+            ],
+            "internalType": "struct INFTEDA.Auction",
+            "name": "auction",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "sendTo",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "components": [
+                  {
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "payload",
+                    "type": "bytes"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "signature",
+                    "type": "bytes"
+                  }
+                ],
+                "internalType": "struct ReservoirOracle.Message",
+                "name": "message",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint8",
+                    "name": "v",
+                    "type": "uint8"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "r",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "s",
+                    "type": "bytes32"
+                  }
+                ],
+                "internalType": "struct ReservoirOracleUnderwriter.Sig",
+                "name": "sig",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct ReservoirOracleUnderwriter.OracleInfo",
+            "name": "oracleInfo",
+            "type": "tuple"
+          }
+        ],
+        "name": "purchaseLiquidationAuctionNFT",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "quoteCurrency",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ERC721",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "reduceDebt",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "sendTo",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "contract ERC721",
+                "name": "addr",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct IPaprController.Collateral[]",
+            "name": "collateralArr",
+            "type": "tuple[]"
+          },
+          {
+            "components": [
+              {
+                "components": [
+                  {
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "payload",
+                    "type": "bytes"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "signature",
+                    "type": "bytes"
+                  }
+                ],
+                "internalType": "struct ReservoirOracle.Message",
+                "name": "message",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint8",
+                    "name": "v",
+                    "type": "uint8"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "r",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "s",
+                    "type": "bytes32"
+                  }
+                ],
+                "internalType": "struct ReservoirOracleUnderwriter.Sig",
+                "name": "sig",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct ReservoirOracleUnderwriter.OracleInfo",
+            "name": "oracleInfo",
+            "type": "tuple"
+          }
+        ],
+        "name": "removeCollateral",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "contract ERC721",
+                "name": "collateral",
+                "type": "address"
+              },
+              {
+                "internalType": "bool",
+                "name": "allowed",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct IPaprController.CollateralAllowedConfig[]",
+            "name": "collateralConfigs",
+            "type": "tuple[]"
+          }
+        ],
+        "name": "setAllowedCollateral",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_fundingPeriod",
+            "type": "uint256"
+          }
+        ],
+        "name": "setFundingPeriod",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bool",
+            "name": "locked",
+            "type": "bool"
+          }
+        ],
+        "name": "setLiquidationsLocked",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_pool",
+            "type": "address"
+          }
+        ],
+        "name": "setPool",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "contract ERC721",
+                "name": "addr",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct IPaprController.Collateral",
+            "name": "collateral",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "components": [
+                  {
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "payload",
+                    "type": "bytes"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "signature",
+                    "type": "bytes"
+                  }
+                ],
+                "internalType": "struct ReservoirOracle.Message",
+                "name": "message",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint8",
+                    "name": "v",
+                    "type": "uint8"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "r",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "s",
+                    "type": "bytes32"
+                  }
+                ],
+                "internalType": "struct ReservoirOracleUnderwriter.Sig",
+                "name": "sig",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct ReservoirOracleUnderwriter.OracleInfo",
+            "name": "oracleInfo",
+            "type": "tuple"
+          }
+        ],
+        "name": "startLiquidationAuction",
+        "outputs": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "nftOwner",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "auctionAssetID",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC721",
+                "name": "auctionAssetContract",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "perPeriodDecayPercentWad",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "secondsInPeriod",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "startPrice",
+                "type": "uint256"
+              },
+              {
+                "internalType": "contract ERC20",
+                "name": "paymentAsset",
+                "type": "address"
+              }
+            ],
+            "internalType": "struct INFTEDA.Auction",
+            "name": "auction",
+            "type": "tuple"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "target",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "targetMarkRatioMax",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "targetMarkRatioMin",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "token0IsUnderlying",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "underlying",
+        "outputs": [
+          {
+            "internalType": "contract ERC20",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "contract ERC721",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "enum ReservoirOracleUnderwriter.PriceKind",
+            "name": "priceKind",
+            "type": "uint8"
+          },
+          {
+            "components": [
+              {
+                "components": [
+                  {
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "payload",
+                    "type": "bytes"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "timestamp",
+                    "type": "uint256"
+                  },
+                  {
+                    "internalType": "bytes",
+                    "name": "signature",
+                    "type": "bytes"
+                  }
+                ],
+                "internalType": "struct ReservoirOracle.Message",
+                "name": "message",
+                "type": "tuple"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "uint8",
+                    "name": "v",
+                    "type": "uint8"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "r",
+                    "type": "bytes32"
+                  },
+                  {
+                    "internalType": "bytes32",
+                    "name": "s",
+                    "type": "bytes32"
+                  }
+                ],
+                "internalType": "struct ReservoirOracleUnderwriter.Sig",
+                "name": "sig",
+                "type": "tuple"
+              }
+            ],
+            "internalType": "struct ReservoirOracleUnderwriter.OracleInfo",
+            "name": "oracleInfo",
+            "type": "tuple"
+          }
+        ],
+        "name": "underwritePriceForCollateral",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "int256",
+            "name": "amount0Delta",
+            "type": "int256"
+          },
+          {
+            "internalType": "int256",
+            "name": "amount1Delta",
+            "type": "int256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "_data",
+            "type": "bytes"
+          }
+        ],
+        "name": "uniswapV3SwapCallback",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "updateTarget",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "nTarget",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ERC721",
+            "name": "asset",
+            "type": "address"
+          }
+        ],
+        "name": "vaultInfo",
+        "outputs": [
+          {
+            "components": [
+              {
+                "internalType": "uint16",
+                "name": "count",
+                "type": "uint16"
+              },
+              {
+                "internalType": "uint16",
+                "name": "auctionCount",
+                "type": "uint16"
+              },
+              {
+                "internalType": "uint40",
+                "name": "latestAuctionStartTime",
+                "type": "uint40"
+              },
+              {
+                "internalType": "uint184",
+                "name": "debt",
+                "type": "uint184"
+              }
+            ],
+            "internalType": "struct IPaprController.VaultInfo",
+            "name": "",
+            "type": "tuple"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ]
+}

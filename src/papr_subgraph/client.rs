@@ -26,11 +26,13 @@ impl Default for GraphQLClient {
 }
 
 impl GraphQLClient {
+    /// TODO screen out vaults if in min auction spacing time period
     pub async fn collateral_vaults_exceeding_debt_per_collateral(
         &self,
         controller: &str,
         collateral: &str,
         debt_per_collateral: U256,
+        latest_auction_before_timestamp: u64,
     ) -> Result<
         Vec<vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults>,
         eyre::Error,
@@ -40,6 +42,7 @@ impl GraphQLClient {
             controller: Some(controller.to_string()),
             collateral: Some(collateral.to_string()),
             debt_per_collateral: Some(debt_per_collateral.to_string()),
+            latest_auction_before: Some(latest_auction_before_timestamp as i64),
         };
         let query = VaultsExceedingDebtPerCollateral::build_query(variables);
         Ok(self.query::<_, ResponseData>(query).await?.vaults)
