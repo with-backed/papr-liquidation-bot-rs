@@ -45,6 +45,9 @@ async fn arb_auctions_for_controller(
     graphql: &GraphQLClient,
 ) -> Result<(), eyre::Error> {
     let auctions = graphql.ongoing_auctions(&controller.id);
+    // group auctions by nft type
+    // send to a function that gets the highest bid
+    // if nft is flagged then we need to iterate and find an acceptable bid
 
     Ok(())
 }
@@ -72,8 +75,6 @@ fn current_price(auction: SubgraphAuction) -> Result<U256, eyre::Error> {
     let percent_remaining = 1 as f64 - decay;
     let multiplier = percent_remaining.powf(period_ratio);
     let price = multiplier * start_price;
-    // actual 270459742027958058
-    // what we get 270459742027958030
 
     Ok(parse_units(price, auction.payment_asset.decimals as u32)?.into())
 }
