@@ -156,8 +156,8 @@ mod tests {
         };
         let info = message.as_contract_oracle_info().unwrap();
         assert_eq!(
-            info.message.timestamp,
-            U256::from_dec_str(&message.timestamp.to_string()).unwrap()
+            info.message.timestamp.to_string(),
+            message.timestamp.to_string()
         );
         assert_eq!(info.message.payload, message.payload);
         assert_eq!(info.message.signature, message.signature);

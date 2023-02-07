@@ -5,7 +5,7 @@ query VaultsExceedingDebtPerCollateral($controller: String, $collateral: String,
         id
     }
     collateral {
-        id
+        tokenId
     }
   }
 }
