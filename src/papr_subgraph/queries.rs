@@ -28,3 +28,10 @@ impl all_controllers::AllControllersPaprControllers {
         Ok(U256::from_dec_str(&self.max_ltv)?)
     }
 }
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "src/papr_subgraph/graphql/paprSchema.graphql",
+    query_path = "src/papr_subgraph/graphql/ongoingAuctionsByController.graphql"
+)]
+pub struct OngoingAuctionsByController;
