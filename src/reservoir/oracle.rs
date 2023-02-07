@@ -1,7 +1,7 @@
 use crate::papr_controller;
 use ethers::{
     types::{Bytes, Signature, U256},
-    utils::hex::FromHex,
+    utils::{hex::FromHex, parse_units},
 };
 use serde::Deserialize;
 use strum_macros::Display;
@@ -39,8 +39,8 @@ pub struct OracleMessage {
 }
 
 impl OracleResponse {
-    pub fn price_in_atomic_units(&self, decimals: u8) -> Result<U256, eyre::Error> {
-        let one = U256::from_dec_str("10")?.pow(decimals.into());
+    pub fn price_in_atomic_units(&self, decimals: u32) -> Result<U256, eyre::Error> {
+        let one: U256 = parse_units(1, decimals)?.into();
         // scalar to prevent loss of precison when converting to atomic
         let scalar = 1e6;
         let u256_scalar = U256::from_dec_str(&scalar.to_string())?;

@@ -12,9 +12,13 @@ query OngoingAuctionsByController($controller: String) {
     },
     secondsInPeriod,
     startPrice,
+    perPeriodDecayPercentWad
     paymentAsset {
       id,
       decimals
+    },
+    start {
+      timestamp
     }
   }
 }

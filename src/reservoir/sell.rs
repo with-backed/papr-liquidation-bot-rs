@@ -1,6 +1,6 @@
+use ethers::types::U256;
 use serde::Deserialize;
 use strum_macros::Display;
-use ethers::types::U256;
 
 #[derive(Display)]
 #[strum(serialize_all = "camelCase")]
@@ -16,20 +16,20 @@ pub struct Response {
 
 #[derive(Deserialize)]
 pub struct Step {
-    pub items: Vec<Item>
+    pub items: Vec<Item>,
 }
 
 #[derive(Deserialize)]
 pub struct Item {
-    status: String, 
-    data: ItemData
+    status: String,
+    data: ItemData,
 }
 
 #[derive(Deserialize)]
 pub struct ItemData {
-    from: String, 
-    to: String, 
-    data: String
+    from: String,
+    to: String,
+    data: String,
 }
 
 impl crate::reservoir::client::ReservoirClient {
@@ -37,7 +37,7 @@ impl crate::reservoir::client::ReservoirClient {
         &self,
         collection: &str,
         token_id: U256,
-        seller: String
+        seller: String,
     ) -> Result<Response, eyre::Error> {
         let url = "/execute/sell/v6";
         let query: Vec<(String, String)> = vec![
@@ -45,10 +45,7 @@ impl crate::reservoir::client::ReservoirClient {
                 QueryParams::Token.to_string(),
                 format!("{}:{}", collection, token_id.to_string()),
             ),
-            (
-                QueryParams::Taker.to_string(),
-                seller,
-            ),
+            (QueryParams::Taker.to_string(), seller),
         ];
         Ok(self.get::<_, Response>(&url, query).await?)
     }
