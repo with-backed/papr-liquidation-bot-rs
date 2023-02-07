@@ -1,16 +1,14 @@
 use crate::{
-    papr_controller::{Collateral, PaprController},
     papr_subgraph::client::GraphQLClient,
     papr_subgraph::queries::{
         all_controllers::AllControllersPaprControllers as Controller,
         ongoing_auctions_by_controller::OngoingAuctionsByControllerAuctions as SubgraphAuction,
-        vaults_exceeding_debt_per_collateral::VaultsExceedingDebtPerCollateralVaults as Vault,
     },
-    reservoir::{client::ReservoirClient, oracle::OracleResponse, oracle::PriceKind},
+    reservoir::{client::ReservoirClient},
 };
 use ethers::{
     types::U256,
-    utils::{format_ether, format_units, parse_units},
+    utils::{format_units, parse_units},
 };
 use once_cell::sync::Lazy;
 use std::{
@@ -94,8 +92,7 @@ mod tests {
             ongoing_auctions_by_controller,
             ongoing_auctions_by_controller::OngoingAuctionsByControllerAuctions as SubgraphAuction,
         },
-        purchase::current_price,
-        start,
+        purchase::current_price
     };
     use ethers::types::{Bytes, U256};
     use std::str::FromStr;
@@ -134,7 +131,7 @@ mod tests {
                 timestamp: start_time as i64,
             },
         };
-        
+
         // computed from solidity = 270459742027958058
         // 25 difference which is sub second. For scale, a second later the price is 3T lower
         assert_eq!(
