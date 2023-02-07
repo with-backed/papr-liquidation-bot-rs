@@ -23,7 +23,7 @@ static DISABLE_EXECUTE_START_ACTION: Lazy<bool> =
 // goerli
 pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let mut m = HashSet::new();
-    m.insert("0xd50004ec23ad97cf3a3bbd9718ad9bd274dc1764");
+    m.insert("0xd0a830278773282bbf635fd8e47b2447f1e9fe86");
     m
 });
 
@@ -106,6 +106,8 @@ async fn start_liquidations_for_vaults(
     oracle_response: OracleResponse,
     controller_provider: &PaprController,
 ) -> Result<(), eyre::Error> {
+    // have to sleep otherwise timestamp will be > block.timestamp
+    std::thread::sleep(std::time::Duration::from_secs(10));
     for vault in vaults {
         let vault_addr = vault.account.to_string().parse::<Address>()?;
         let collateral = Collateral {
@@ -116,7 +118,7 @@ async fn start_liquidations_for_vaults(
                     .first()
                     // should not be possible happen but just incase :)
                     .ok_or(eyre::eyre!("no collateral in vault"))?
-                    .id,
+                    .token_id,
             )?,
         };
         println!(
