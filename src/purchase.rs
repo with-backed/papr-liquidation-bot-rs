@@ -69,7 +69,6 @@ fn current_price(auction: SubgraphAuction) -> Result<U256, eyre::Error> {
         .as_secs()
         .checked_sub(auction.start.timestamp as u64)
         .ok_or(eyre::eyre!("timestamp error"))?;
-    println!("elapsed {}", elapsed_time);
 
     let period_ratio = elapsed_time as f64 / auction.seconds_in_period.parse::<f64>()?;
     let percent_remaining = 1 as f64 - decay;
