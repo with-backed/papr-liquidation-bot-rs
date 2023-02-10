@@ -20,10 +20,13 @@ const TWO_DAYS_SECONDS: u64 = 172800;
 static DISABLE_EXECUTE_START_ACTION: Lazy<bool> =
     Lazy::new(|| env::var("DISABLE_EXECUTE_START_ACTION").unwrap_or("false".to_string()) == "true");
 
-// goerli
+
 pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let mut m = HashSet::new();
+    // goerli paprHero
     m.insert("0xd0a830278773282bbf635fd8e47b2447f1e9fe86");
+    // paprMeme
+    m.insert("0x3b29c19ff2fcea0ff98d0ef5b184354d74ea74b0");
     m
 });
 
