@@ -59,6 +59,9 @@ async fn arb_auctions_for_controller(
     //     - send needed WETH proceeds (wrap if needed) to uniswap 
     //     - sanity check that ending ETH > starting ETH :) 
 
+    // NOTE to take advantage of starter incentive you'd need to make sure the purchase contract also starts
+    // would want to keep track of which auctions you started so that you can update current_price correctly (-10%)
+
     Ok(())
 }
 
