@@ -19,7 +19,10 @@ use std::{
 // goerli
 pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let mut m = HashSet::new();
+    // goerli paprHero
     m.insert("0xd0a830278773282bbf635fd8e47b2447f1e9fe86");
+    // paprMeme
+    m.insert("0x3b29c19ff2fcea0ff98d0ef5b184354d74ea74b0");
     m
 });
 
@@ -31,8 +34,6 @@ pub async fn purchase_auctions_from_whitelisted_controllers(
 
     for controller in controllers {
         if WHITELIST.contains(&*controller.id) {
-            println!("starting for {}", controller.id);
-            println!("quote currency {}", controller.underlying.id);
             arb_auctions_for_controller(controller, reservoir, graphql).await?;
         }
     }
@@ -45,9 +46,18 @@ async fn arb_auctions_for_controller(
     graphql: &GraphQLClient,
 ) -> Result<(), eyre::Error> {
     let auctions = graphql.ongoing_auctions(&controller.id);
-    // group auctions by nft type
-    // send to a function that gets the highest bid
-    // if nft is flagged then we need to iterate and find an acceptable bid
+    // niave: for each auction, better to cache reservoir responses for a given NFT contract
+    //  1. get current_price 
+    //  2. quote from uniswap on how much ETH to buy papr
+    //  3. call reservoir::sell
+    //  4. get orderId from path
+    //  5. get order from reservoir::orders::bids (need to update to take optional arg of orderId array)
+    //  6. check order.price.net_amount > required ETH
+    //  7. Call a multicall contract: swap papr from uniswap and encode following steps in the callback data
+    //     - call purchase auction (ensure papr controller approved to pull WETH from contract)
+    //     - all steps from reservoir::sell
+    //     - send needed WETH proceeds (wrap if needed) to uniswap 
+    //     - sanity check that ending ETH > starting ETH :) 
 
     Ok(())
 }
