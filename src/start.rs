@@ -34,7 +34,7 @@ pub async fn start_liquidations_for_whitelisted_controllers(
     reservoir: &ReservoirClient,
     graphql: &GraphQLClient,
 ) -> Result<(), eyre::Error> {
-    let controllers = graphql.all_papr_controllers().await.unwrap();
+    let controllers = graphql.all_papr_controllers().await?;
 
     for controller in controllers {
         if WHITELIST.contains(&*controller.id) {
