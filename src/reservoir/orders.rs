@@ -16,6 +16,8 @@ pub struct BidsResponse {
 
 #[derive(Deserialize)]
 pub struct Order {
+    pub id: String,
+    pub kind: String,
     pub price: Price,
     pub criteria: Criteria,
 }
@@ -23,11 +25,27 @@ pub struct Order {
 #[derive(Deserialize)]
 pub struct Price {
     pub amount: Amount,
+    pub net_amount: NetAmount,
+    pub currency: Currency,
 }
 
-#[derive(Deserialize, PartialEq, PartialOrd)]
+#[derive(Deserialize)]
 pub struct Amount {
     pub usd: f64,
+    native: f64,
+}
+
+#[derive(Deserialize)]
+pub struct NetAmount {
+    raw: String,
+    pub decimal: f64,
+    native: f64,
+}
+
+#[derive(Deserialize)]
+pub struct Currency {
+    contract: String,
+    decimals: u8,
 }
 
 #[derive(Deserialize)]

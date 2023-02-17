@@ -6,8 +6,10 @@ use serde::Serialize;
 use std::env;
 
 use crate::papr_subgraph::queries::{
-    all_controllers, collateral_by_controller, vaults_exceeding_debt_per_collateral,
-    AllControllers, CollateralByController, VaultsExceedingDebtPerCollateral,
+    all_controllers, collateral_by_controller, ongoing_auctions_by_controller,
+    ongoing_auctions_by_controller::OngoingAuctionsByControllerAuctions as Auctions,
+    vaults_exceeding_debt_per_collateral, AllControllers, CollateralByController,
+    OngoingAuctionsByController, VaultsExceedingDebtPerCollateral,
 };
 
 static SUBGRAPH_URL: Lazy<String> =
@@ -72,6 +74,15 @@ impl GraphQLClient {
         use all_controllers::*;
         let query = AllControllers::build_query(Variables);
         Ok(self.query::<_, ResponseData>(query).await?.papr_controllers)
+    }
+
+    pub async fn ongoing_auctions(&self, controller: &str) -> Result<Vec<Auctions>, eyre::Error> {
+        use ongoing_auctions_by_controller::*;
+        let variables = Variables {
+            controller: Some(controller.to_string()),
+        };
+        let query = OngoingAuctionsByController::build_query(variables);
+        Ok(self.query::<_, ResponseData>(query).await?.auctions)
     }
 
     async fn query<V: Serialize, D: DeserializeOwned>(

@@ -1,0 +1,24 @@
+query OngoingAuctionsByController($controller: String) {
+  auctions(where: { controller: $controller, end: null}) {
+    id,
+    nftOwner,
+    startedBy,
+    auctionAssetID,
+    auctionAssetContract {
+      id
+    },
+    vault {
+      account
+    },
+    secondsInPeriod,
+    startPrice,
+    perPeriodDecayPercentWad
+    paymentAsset {
+      id,
+      decimals
+    },
+    start {
+      timestamp
+    }
+  }
+}
