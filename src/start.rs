@@ -25,6 +25,7 @@ pub static WHITELIST: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let mut m = HashSet::new();
     // goerli paprHero
     m.insert("0xd0a830278773282bbf635fd8e47b2447f1e9fe86");
+    m.insert("0x092018ff54df5bfa53e1c6e75ad0e2d8991a8b1e");
     // paprMeme
     m.insert("0x3b29c19ff2fcea0ff98d0ef5b184354d74ea74b0");
     m
