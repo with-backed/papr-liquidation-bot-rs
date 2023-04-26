@@ -1,6 +1,7 @@
 mod papr_controller;
 mod papr_subgraph;
 mod provider;
+mod purchase;
 mod reservoir;
 mod start;
 use crate::{
@@ -46,7 +47,7 @@ async fn collection_bids_gte(collection: &str, price: f64) -> Result<usize, eyre
         .await?
         .orders
         .into_iter()
-        .filter(|o| o.price.amount >= reservoir::orders::Amount { usd: price })
+        .filter(|o| o.price.amount.usd >= price)
         .collect::<Vec<reservoir::orders::Order>>()
         .len();
 

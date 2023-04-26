@@ -76,11 +76,11 @@ async fn start_liqudations_for_controller(
         println!(
             "price {}",
             oracle_response
-                .price_in_atomic_units(controller.underlying.decimals as u8)
+                .price_in_atomic_units(controller.underlying.decimals as u32)
                 .unwrap()
         );
         let max = max_debt(
-            oracle_response.price_in_atomic_units(controller.underlying.decimals as u8)?,
+            oracle_response.price_in_atomic_units(controller.underlying.decimals as u32)?,
             max_ltv,
             target,
         )?;
